@@ -1,0 +1,16 @@
+Los adaptadores reciben informacion, la adaptan y la devuelven.
+Ejemplo:
+
+import { EndpointUser, User } from '@/models';
+
+export const createAddaptedUser = ( user: EndpointUser ) => {
+    const formattedUser: User = {
+        name: user.name,
+        lastName: user.last_name
+    };
+
+    return formattedUser;
+}
+
+Estos archivos funcionan como un puente para transformar los datos que se reciben del backend o de las APIs.
+Se realiza la transformacion para que sea mas facil la manipulacion de estos datos en el frontend

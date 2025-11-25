@@ -1,0 +1,3 @@
+Controla los ciclos de vida de los componentes.
+Este directorio es para los customs hooks, que son funciones JS que comienzan con la palabra use.
+Los Hooks son funciones especiales de React que te permiten usar características de los componentes de clase (estado, ciclo de vida, etc.) en componentes funcionales.
