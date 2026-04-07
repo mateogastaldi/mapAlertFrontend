@@ -1,0 +1,3 @@
+Es donde se pone la peticion.
+Si se usan librerias como Axios para las consultas HTTP, esta carpeta es la que debe contener los interceptores.
+Estas son funciones que pueden interceptar y manipular todos las peticiones de salida y entrada y responderlas.

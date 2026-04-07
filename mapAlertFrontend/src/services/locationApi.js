@@ -1,0 +1,12 @@
+{
+    place_id:
+    street:
+    street_number:
+    city:
+    state:
+    country:
+    lat:
+    lng:
+    report_type:
+    report_description:
+};

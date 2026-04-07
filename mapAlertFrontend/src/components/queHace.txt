@@ -1,0 +1,2 @@
+son todos los componentes que se van a crear en la aplicacion, aqui solo van los componentes que se van a usar dentro de toda la aplicacion.
+Esta carpeta almacena todos los elementos reusables de la UI

@@ -1,0 +1,3 @@
+Dentro de context, contiene contextos que van a ser utilizados dentro de una page, si necesitamos algo mas grande es mejor ponerlo en redux
+Esta carpeta es donde se define y se maneja los estados de Reacts Context APIs.
+Es utilizada para los datos que necesitan ser compartidos con muchos componentes en diferentes niveles del alrbol de componentes.

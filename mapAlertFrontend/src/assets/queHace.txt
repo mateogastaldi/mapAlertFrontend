@@ -1,0 +1,3 @@
+Todo lo que la aplicacion usa de multimedia, tipografia, imagenes, etc...
+
+Aqui se guarda todos los archivos estaticos de la aplicacion.
