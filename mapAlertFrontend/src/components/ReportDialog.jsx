@@ -258,7 +258,7 @@ function ReportDialog({ open, onClose }) {
                   },
                 }}
               >
-                Ingresar direction
+                Ingresar direccion
               </Button>
             </Box>
             {selectedCargarDireccion ? (
