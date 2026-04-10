@@ -1,62 +1,140 @@
-import React from 'react';
-import { Container, Typography, Button, Box } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import BuildIcon from '@mui/icons-material/Build';
-import pallette from '../../styled-components/pallette.jsx';
+import { Container, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import TextInputBase from "../../components/TextInputBase";
+import logo from "../../assets/logo png.png";
+import PasswordInputBase from "../../components/PassworInputBase";
+import ButtonAcceptBase from "../../components/ButtonAcceptBase";
+import ButtonCancelBase from "../../components/ButtonCancelBase";
+import { register } from "../../services/authService";
+
+const marginTop = "13px";
+const marginBottom = "13px";
+const maxWidth = "20rem";
+const maxWidthBottom = "8rem";
+const marginXButton = "8px";
 
 function Login() {
+    const [openCancelDialog, setOpenCancelDialog] = useState(false);
     const navigate = useNavigate();
 
+    const [form, setForm] = useState({
+        usuario: "",
+        contrasena: ""
+    });
+
+    const handleSubmit = async () => {
+        try {
+            console.log(form);
+            await register(form);
+            alert("Usuario creado correctamente");
+
+            // opcional: redirigir al login
+            window.location.href = "/login";
+
+        } catch (err) {
+            console.error(err); // 🔥 VER ERROR REAL
+            alert(err.response?.data?.message || "Error al iniciar sesion");
+        }
+    };
+
     return (
-        <Container 
-            maxWidth={false} 
+        <Container
+            maxWidth="xl"
             sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                bgcolor: pallette?.secondary || '#f5f5f5',
-                color: pallette?.primary || '#1976d2',
-                textAlign: 'center'
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
             }}
         >
-            <Box 
+            <Box
                 sx={{
-                    p: 5,
-                    borderRadius: 3,
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                    bgcolor: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 3,
-                    maxWidth: 500
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: {
+                        xs: "90%",
+                        sm: "70%",
+                        md: "60%",
+                        lg: "50%",
+                        xl: "40%",
+                    },
                 }}
             >
-                <BuildIcon sx={{ fontSize: 80, color: pallette?.primary || '#1976d2' }} />
-                <Typography variant="h3" component="h1" fontWeight="bold" sx={{ color: pallette?.primary || '#1976d2' }}>
-                    En Mantenimiento
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                    La página de Iniciar Sesión aún está en obra. ¡Vuelve pronto!
-                </Typography>
-                <Button 
-                    variant="contained" 
-                    size="large"
-                    onClick={() => navigate('/')}
-                    sx={{ 
-                        mt: 2, 
-                        bgcolor: pallette?.primary, 
-                        color: pallette?.secondary,
-                        '&:hover': {
-                            bgcolor: pallette?.primary,
-                            opacity: 0.9
-                        }
+                <Box
+                    component="img"
+                    src={logo}
+                    alt="Logo"
+                    sx={{
+                        width: "100%",
+                        objectFit: "contain",
+                    }}
+                />
+
+                {/* 🔥 AGREGADO: usuario */}
+                <TextInputBase
+                    nombre="Usuario"
+                    mt={marginTop}
+                    mb={marginBottom}
+                    required={true}
+                    mw={maxWidth}
+                    onChange={(e) =>
+                        setForm({ ...form, usuario: e.target.value })
+                    }
+                />   
+
+                <PasswordInputBase
+                    nombre="Contraseña"
+                    mt={marginTop}
+                    mb={marginBottom}
+                    required={true}
+                    mw={maxWidth}
+                    onChange={(e) =>
+                        setForm({ ...form, contrasena: e.target.value })
+                    }
+                />
+
+                <Box
+                    sx={{
+                        width: "100%",
+                        maxWidth: maxWidth,
                     }}
                 >
-                    Volver al Mapa
-                </Button>
+                    <ButtonCancelBase
+                        mt={marginTop}
+                        mb={marginBottom}
+                        mw={maxWidthBottom}
+                        mx={marginXButton}
+                        onClick={() => setOpenCancelDialog(true)}
+                    />
+
+                    <ButtonAcceptBase
+                        mt={marginTop}
+                        mb={marginBottom}
+                        mw={maxWidthBottom}
+                        mx={marginXButton}
+                        onClick={handleSubmit} // 🔥 clave
+
+                    />
+                </Box>
+                <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)}>
+                    <DialogTitle sx={{ fontWeight: 'bold' }}>Cancelar Inicio de sesion</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            ¿Está seguro que quiere cancelar?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setOpenCancelDialog(false)} color="primary">
+                            No
+                        </Button>
+                        <Button onClick={() => navigate('/')} color="error" autoFocus>
+                            Sí
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </Box>
         </Container>
     );

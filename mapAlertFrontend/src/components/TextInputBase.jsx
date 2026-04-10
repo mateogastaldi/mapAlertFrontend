@@ -1,5 +1,6 @@
 import { TextField } from "@mui/material";
 import React from "react";
+import pallette from "../styled-components/pallette";
 
 function TextInputBase({
     nombre,
@@ -38,14 +39,14 @@ function TextInputBase({
                 marginLeft: ml,
                 marginRight: mr,
                 "& .MuiOutlinedInput-root": {
-                    "& fieldset": { borderColor: "#01964bff" },
-                    "&:hover fieldset": { borderColor: "#01964bff" },
-                    "&.Mui-focused fieldset": { borderColor: "#01964bff" }
+                    "& fieldset": { borderColor: pallette.primary },
+                    "&:hover fieldset": { borderColor: pallette.primary },
+                    "&.Mui-focused fieldset": { borderColor: pallette.primary }
                 },
-                "& .MuiInputLabel-root": { color: "#01964bff" },
-                "&:hover .MuiInputLabel-root": { color: "#01964bff" },
+                "& .MuiInputLabel-root": { color: pallette.primary },
+                "&:hover .MuiInputLabel-root": { color: pallette.primary },
                 "& .MuiInputLabel-root.Mui-focused": {
-                    color: "#01964bff"
+                    color: pallette.primary
                 }
             }}
         />

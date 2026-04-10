@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@mui/material";
+import pallette from "../styled-components/pallette";
 
 export default function ButtonAcceptBase({
   text,
@@ -20,7 +21,7 @@ export default function ButtonAcceptBase({
       variant="contained"
       onClick={onClick} // 🔥 esto hace que funcione el botón
       sx={{
-        backgroundColor: "#01964bff",
+        backgroundColor: pallette.primary,
         width: {
           xs: "90%",   // móvil
           sm: "70%",   // tablet

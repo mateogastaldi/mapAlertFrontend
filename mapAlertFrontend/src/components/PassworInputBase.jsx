@@ -6,6 +6,7 @@ import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import pallette from "../styled-components/pallette";
 
 export default function PasswordInputBase({
   nombre,
@@ -48,14 +49,14 @@ export default function PasswordInputBase({
         marginBottom: mb,
         marginLeft: ml,
         marginRight: mr,
-        color: "#01964bff",
+        color: pallette.primary,
       }}
       variant="outlined"
       required={required}
     >
       <InputLabel
         htmlFor="outlined-adornment-password"
-        sx={{ color: "#03723bff", "&.Mui-focused": { color: "#01964bff" } }}
+        sx={{ color: pallette.primary, "&.Mui-focused": { color: pallette.primary } }}
       >
         {nombre}
       </InputLabel>
@@ -75,7 +76,7 @@ export default function PasswordInputBase({
               onMouseDown={handleMouseDownPassword}
               onMouseUp={handleMouseUpPassword}
               edge="end"
-              sx={{ color: "#01964bff" }}
+              sx={{ color: pallette.primary }}
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>
@@ -83,12 +84,12 @@ export default function PasswordInputBase({
         }
         label={nombre}
         sx={{
-          "& .MuiOutlinedInput-notchedOutline": { borderColor: "#01964bff" },
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: pallette.primary },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#01964bff",
+            borderColor: pallette.primary,
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#01964bff",
+            borderColor: pallette.primary,
           },
         }}
       />

@@ -1,5 +1,5 @@
 const pallette = {
-    primary: "#12BC8E",
+    primary: "#01964bff",
     secondary:"#ffff",
     cancel: "#ec5353"
 }
