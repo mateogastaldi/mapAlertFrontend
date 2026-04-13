@@ -83,7 +83,7 @@ function Login() {
                     onChange={(e) =>
                         setForm({ ...form, usuario: e.target.value })
                     }
-                />   
+                />
 
                 <PasswordInputBase
                     nombre="Contraseña"
