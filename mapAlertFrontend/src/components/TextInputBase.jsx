@@ -46,8 +46,7 @@ function TextInputBase({
                 "& .MuiInputLabel-root": { color: pallette.primary },
                 "&:hover .MuiInputLabel-root": { color: pallette.primary },
                 "& .MuiInputLabel-root.Mui-focused": {
-                    color: pallette.primary
-
+                    color: "#01964bff"
                 }
             }}
         />
