@@ -1,11 +1,12 @@
 import React from "react";
 import { Button } from "@mui/material";
+import pallette from "../styled-components/pallette";
 
 export default function ButtonCancelBase({text, mr,mt,mb,m,ml,mw,mx, onClick}){
     const texto = text ? text : "Cancelar";
     return(
         <Button variant="contained" onClick={onClick} sx={{
-        backgroundColor: "#ec5353",
+        backgroundColor: pallette.cancel,
         width: {
           xs: "90%",   // móvil
           sm: "70%",    // tablet
