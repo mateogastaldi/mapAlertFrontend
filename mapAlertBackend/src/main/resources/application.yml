@@ -1,0 +1,38 @@
+# Nombre aplicación
+spring:
+  application:
+    name: backend
+
+  # Desactiva solo seguridad si es necesario
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+  # MySQL - CONEXIÓN COMPLETA
+  datasource:
+    url: jdbc:mysql://localhost:3306/mapalert?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    username: root
+    password: cuchitril
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+
+  # JPA Config
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+  jwt:
+    secret: "clave-super-secreta-de-al-menos-32-caracteres-para-HS256"
+    expiration-ms: 86400000  # 24 horas
+    refresh-token:
+      expiration: 604800000
+
+# Server
+server:
+  port: 8080
