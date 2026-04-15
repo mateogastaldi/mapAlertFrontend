@@ -22,15 +22,15 @@ public class ReporteServiceImpl implements ReporteService {
     public Reporte crearReporte(ReporteDTO dto) {
         Reporte reporte = new Reporte();
 
-        reporte.setLatitud(dto.getLatitud());
-        reporte.setLongitud(dto.getLongitud());
-        reporte.setCalle(dto.getCalle());
-        reporte.setNumeroCalle(dto.getNumeroCalle());
-        reporte.setCiudad(dto.getCiudad());
-        reporte.setProvincia(dto.getProvincia());
-        reporte.setPais(dto.getPais());
-        reporte.setTipoReporte(dto.getTipoReporte());
-        reporte.setDescripcion(dto.getDescripcion());
+        reporte.setLatitud(dto.getLat());
+        reporte.setLongitud(dto.getLng());
+        reporte.setCalle(dto.getStreet());
+        reporte.setNumeroCalle(dto.getStreetNumber());
+        reporte.setCiudad(dto.getCity());
+        reporte.setProvincia(dto.getState());
+        reporte.setPais(dto.getCountry());
+        reporte.setTipoReporte(dto.getReportType());
+        reporte.setDescripcion(dto.getReportDescription());
 
         return reporteRepository.save(reporte);
     }
@@ -38,5 +38,10 @@ public class ReporteServiceImpl implements ReporteService {
     @Override
     public List<Reporte> listarReportes() {
         return reporteRepository.findAll();
+    }
+
+    public List<Reporte> getReportsByBounds(Double southLat, Double westLng, Double northLat, Double eastLng){
+        return reporteRepository.findByBounds(southLat, northLat, westLng, eastLng);
+        
     }
 }

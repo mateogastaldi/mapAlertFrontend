@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.Min;
@@ -11,91 +12,36 @@ import jakarta.validation.constraints.Min;
 import com.example.backend.enums.TipoReporte;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReporteDTO {
 //uso validaciones aca para evitar desde el principio datos incorrectos
     @NotBlank(message = "La latitud es obligatoria")
-    private String latitud;
+    private String lat;
 
     @NotBlank(message = "La longitud es obligatoria")
-    private String longitud;
+    private String lng;
 
 
-    private String calle;
+    private String street;
 
     @Min(value = 0, message = "El número de calle no puede ser negativo")
-    private Integer numeroCalle;
+    private Integer streetNumber;
 
     @NotBlank(message = "La ciudad es obligatoria")
-    private String ciudad;
+    private String city;
 
     @NotBlank(message = "La provincia es obligatoria")
-    private String provincia;
+    private String state;
 
     @NotBlank(message = "El país es obligatorio")
-    private String pais;
+    private String country;
 
     @NotNull(message = "El tipo de reporte es obligatorio")
-    private TipoReporte tipoReporte;
+    private TipoReporte reportType;
 
     @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
-    private String descripcion;
+    private String reportDescription;
 
-    // Getters y Setters
-
-    public String getLatitud() {
-        return latitud;
-    }
-    public void setLatitud(String latitud) {
-        this.latitud = latitud;
-    }
-    public String getLongitud() {
-        return longitud;
-    }
-    public void setLongitud(String longitud) {
-        this.longitud = longitud;
-    }
-    public String getCalle() {
-        return calle;
-    }
-    public void setCalle(String calle) {
-        this.calle = calle;
-    }
-    public Integer getNumeroCalle() {
-        return numeroCalle;
-    }
-    public void setNumeroCalle(Integer numeroCalle) {
-        this.numeroCalle = numeroCalle;
-    }
-    public String getCiudad() {
-        return ciudad;
-    }
-    public void setCiudad(String ciudad) {
-        this.ciudad = ciudad;
-    }
-    public String getProvincia() {
-        return provincia;
-    }
-    public void setProvincia(String provincia) {
-        this.provincia = provincia;
-    }
-    public String getPais() {
-        return pais;
-    }
-    public void setPais(String pais) {
-        this.pais = pais;
-    }
-    public TipoReporte getTipoReporte() {
-        return tipoReporte;
-    }
-    public void setTipoReporte(TipoReporte tipoReporte) {
-        this.tipoReporte = tipoReporte;
-    }
-    public String getDescripcion() {
-        return descripcion;
-    }
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
 }
