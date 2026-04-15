@@ -70,7 +70,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email; // usamos email como identificador único para el login
+        return usuario; // usamos email como identificador único para el login
     }
 
     @Override

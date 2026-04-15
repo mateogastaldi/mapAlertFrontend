@@ -19,10 +19,10 @@ function Register() {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        usuario: "",
-        contrasena: "",
-        nombres: "",
-        apellidos: "",
+        username: "",
+        password: "",
+        firstName: "",
+        lastName: "",
         email: "",
     });
 
@@ -84,7 +84,7 @@ function Register() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, usuario: e.target.value })
+                        setForm({ ...form, username: e.target.value })
                     }
                 />
 
@@ -95,7 +95,7 @@ function Register() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, nombres: e.target.value })
+                        setForm({ ...form, firstName: e.target.value })
                     }
                 />
 
@@ -106,7 +106,7 @@ function Register() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, apellidos: e.target.value })
+                        setForm({ ...form, lastName: e.target.value })
                     }
                 />
 
@@ -129,7 +129,7 @@ function Register() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, contrasena: e.target.value })
+                        setForm({ ...form, password: e.target.value })
                     }
                 />
 

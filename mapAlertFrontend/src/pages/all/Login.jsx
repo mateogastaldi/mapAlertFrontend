@@ -6,7 +6,7 @@ import logo from "../../assets/logo png.png";
 import PasswordInputBase from "../../components/PassworInputBase";
 import ButtonAcceptBase from "../../components/ButtonAcceptBase";
 import ButtonCancelBase from "../../components/ButtonCancelBase";
-import { register } from "../../services/authService";
+import { login, register } from "../../services/authService";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -19,15 +19,15 @@ function Login() {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        usuario: "",
-        contrasena: ""
+        username: "",
+        password: ""
     });
 
     const handleSubmit = async () => {
         try {
             console.log(form);
-            await register(form);
-            alert("Usuario creado correctamente");
+            await login(form);
+            alert("Sesion inciada correctamente");
 
             // opcional: redirigir al login
             window.location.href = "/login";
@@ -81,7 +81,7 @@ function Login() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, usuario: e.target.value })
+                        setForm({ ...form, username: e.target.value })
                     }
                 />
 
@@ -92,7 +92,7 @@ function Login() {
                     required={true}
                     mw={maxWidth}
                     onChange={(e) =>
-                        setForm({ ...form, contrasena: e.target.value })
+                        setForm({ ...form, password: e.target.value })
                     }
                 />
 
