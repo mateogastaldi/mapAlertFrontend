@@ -1,16 +1,27 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.example.backend.enums.Rol;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+@Data
+@Builder
 @Entity
-@Table(name = "usuarios")
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "usuarios", uniqueConstraints = {@UniqueConstraint(columnNames = {"usuario"})})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario implements UserDetails {
 
@@ -19,7 +30,7 @@ public class Usuario implements UserDetails {
     @Column(name = "id_usuario")
     protected Long id;
 
-    @Column(name = "usuario", unique = true)
+    @Column(name = "usuario", unique = true, nullable = false)
     protected String usuario;
 
     @Column(name = "contrasena")
@@ -31,11 +42,11 @@ public class Usuario implements UserDetails {
     @Column(name = "apellidos")
     protected String apellidos;
 
-    @Column(name = "email", unique = true)
+    @Column(name = "email", unique = true, nullable = false)
     protected String email;
 
     @Column(name = "rol")
-    protected String rol = "USER"; // valor por defecto
+    protected Rol rol; 
 
     @Column(name = "fecha_creacion")
     protected LocalDateTime fechaCreacion;
@@ -49,7 +60,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + rol));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + rol.name()));
     }
 
     @Override
@@ -74,29 +85,4 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isEnabled() { return true; }
 
-    // ── Getters y Setters ────────────────────────────────────────────
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getUsuario() { return usuario; }
-    public void setUsuario(String usuario) { this.usuario = usuario; }
-
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
-
-    public String getNombres() { return nombres; }
-    public void setNombres(String nombres) { this.nombres = nombres; }
-
-    public String getApellidos() { return apellidos; }
-    public void setApellidos(String apellidos) { this.apellidos = apellidos; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
-
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
-    public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
 }

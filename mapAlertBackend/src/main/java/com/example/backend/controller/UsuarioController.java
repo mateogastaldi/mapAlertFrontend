@@ -6,8 +6,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.backend.dto.LoginDTO;
-import com.example.backend.dto.UsuarioRegistroDTO;
+
+import com.example.backend.dto.LoginRequestDTO;
+import com.example.backend.dto.RegisterRequestDTO;
 import com.example.backend.entity.Usuario;
 import com.example.backend.service.UsuarioService;
 
@@ -24,7 +25,7 @@ public class UsuarioController {
     // REGISTRO
     @PostMapping("/register")
     public ResponseEntity<Usuario> register(
-            @Valid @RequestBody UsuarioRegistroDTO dto) {
+            @Valid @RequestBody RegisterRequestDTO dto) {
 
         Usuario usuario = usuarioService.crearUsuario(dto);
         return new ResponseEntity<>(usuario, HttpStatus.CREATED);
@@ -33,7 +34,7 @@ public class UsuarioController {
     // LOGIN
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(
-            @Valid @RequestBody LoginDTO dto) {
+            @Valid @RequestBody LoginRequestDTO dto) {
 
         Usuario usuario = usuarioService.login(dto);
         return ResponseEntity.ok(usuario);

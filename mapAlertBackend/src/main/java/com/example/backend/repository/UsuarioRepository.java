@@ -16,4 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByUsuario(String usuario);
     //para verificar q no este ya registrado
+
+    Optional<Usuario> findByEmail(String email);
+    Optional<Usuario> findById(Long id);
 }

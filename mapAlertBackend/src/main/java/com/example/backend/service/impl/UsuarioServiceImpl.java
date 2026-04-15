@@ -7,8 +7,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.backend.dto.LoginDTO;
-import com.example.backend.dto.UsuarioRegistroDTO;
+import com.example.backend.dto.LoginRequestDTO;
+import com.example.backend.dto.RegisterRequestDTO;
 import com.example.backend.entity.Usuario;
 import com.example.backend.repository.UsuarioRepository;
 import com.example.backend.service.UsuarioService;
@@ -27,10 +27,10 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Usuario crearUsuario(UsuarioRegistroDTO dto) {
+    public Usuario crearUsuario(RegisterRequestDTO dto) {
 
         // validar usuario duplicado
-        if (usuarioRepository.existsByUsuario(dto.getUsuario())) {
+        if (usuarioRepository.existsByUsuario(dto.getUsername())) {
             throw new RuntimeException("El nombre de usuario ya existe");
         }
 
@@ -40,27 +40,27 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         Usuario usuario = new Usuario();
-        usuario.setUsuario(dto.getUsuario());
-        usuario.setContrasena(passwordEncoder.encode(dto.getContrasena()));
-        usuario.setNombres(dto.getNombres());
-        usuario.setApellidos(dto.getApellidos());
+        usuario.setUsuario(dto.getUsername());
+        usuario.setContrasena(passwordEncoder.encode(dto.getPassword()));
+        usuario.setNombres(dto.getFirstName());
+        usuario.setApellidos(dto.getLastName());
         usuario.setEmail(dto.getEmail());
 
         return usuarioRepository.save(usuario);
     }
 
     @Override
-    public Usuario login(LoginDTO dto) {
+    public Usuario login(LoginRequestDTO dto) {
 
         Optional<Usuario> usuarioOpt =
-                usuarioRepository.findByUsuario(dto.getUsuario());
+                usuarioRepository.findByUsuario(dto.getUsername());
 
         if (usuarioOpt.isEmpty()) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");        }
 
         Usuario usuario = usuarioOpt.get();
 
-        if (!passwordEncoder.matches(dto.getContrasena(), usuario.getContrasena())) {
+        if (!passwordEncoder.matches(dto.getPassword(), usuario.getContrasena())) {
             throw new RuntimeException("Usuario o contraseña incorrectos");
         }
 

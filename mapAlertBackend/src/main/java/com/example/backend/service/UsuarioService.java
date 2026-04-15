@@ -1,12 +1,13 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.LoginDTO;
-import com.example.backend.dto.UsuarioRegistroDTO;
+import com.example.backend.dto.LoginRequestDTO;
+import com.example.backend.dto.RegisterRequestDTO;
 import com.example.backend.entity.Usuario;
 
+
 public interface UsuarioService {
-    Usuario crearUsuario(UsuarioRegistroDTO dto);
-    Usuario login(LoginDTO dto);
+    Usuario crearUsuario(RegisterRequestDTO dto);
+    Usuario login(LoginRequestDTO dto);
 }
 
 

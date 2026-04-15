@@ -3,15 +3,18 @@ spring:
   application:
     name: backend
 
+  config:
+    import: "optional:file:.env"  
+
   # Desactiva solo seguridad si es necesario
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
   # MySQL - CONEXIÓN COMPLETA
   datasource:
-    url: jdbc:mysql://localhost:3306/mapalert?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    url: jdbc:mysql://localhost:3306/mapAlert?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
     username: root
-    password: cuchitril
+    password: mateosql
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 10
@@ -28,7 +31,7 @@ spring:
         format_sql: true
 
   jwt:
-    secret: "clave-super-secreta-de-al-menos-32-caracteres-para-HS256"
+    secret: "${JWT_SECRET_KEY}"
     expiration-ms: 86400000  # 24 horas
     refresh-token:
       expiration: 604800000
