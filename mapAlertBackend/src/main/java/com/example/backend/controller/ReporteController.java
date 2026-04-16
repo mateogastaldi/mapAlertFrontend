@@ -26,11 +26,11 @@ public class ReporteController {
         this.reporteService = reporteService;
     }
 
-    @PostMapping
-    public ResponseEntity<Reporte> crearReporte(
+    @PostMapping("/crear")
+    public ResponseEntity<ReporteDTO> crearReporte(
             @Valid @RequestBody ReporteDTO dto) {
 
-        Reporte reporte = reporteService.crearReporte(dto);
+        ReporteDTO reporte = reporteService.crearReporte(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(reporte);
     }
 

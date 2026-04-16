@@ -10,7 +10,7 @@ import com.example.backend.entity.Reporte;
 
 public interface ReporteService {
 
-    Reporte crearReporte(ReporteDTO dto);
+    ReporteDTO crearReporte(ReporteDTO dto);
     List<Reporte> listarReportes();
     List<Reporte> getReportsByBounds(Double southLat, Double westLng, Double northLat, Double eastLng);
 }

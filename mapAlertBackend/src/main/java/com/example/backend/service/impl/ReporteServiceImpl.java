@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.backend.dto.ReporteDTO;
 import com.example.backend.entity.Reporte;
+import com.example.backend.exceptions.reportes.ReporteNotSaveException;
 import com.example.backend.repository.ReporteRepository;
 import com.example.backend.service.ReporteService;
 
@@ -19,7 +20,7 @@ public class ReporteServiceImpl implements ReporteService {
     }
 
     @Override
-    public Reporte crearReporte(ReporteDTO dto) {
+    public ReporteDTO crearReporte(ReporteDTO dto) {
         Reporte reporte = new Reporte();
 
         reporte.setLatitud(dto.getLat());
@@ -32,7 +33,27 @@ public class ReporteServiceImpl implements ReporteService {
         reporte.setTipoReporte(dto.getReportType());
         reporte.setDescripcion(dto.getReportDescription());
 
-        return reporteRepository.save(reporte);
+        Reporte reporteGuardado;
+
+        try{
+            reporteGuardado = reporteRepository.save(reporte);
+        } catch (Exception e){
+            throw new ReporteNotSaveException(); 
+        } 
+
+        ReporteDTO reporteGuardadoDTO = new ReporteDTO().builder()
+                                            .city(reporteGuardado.getCiudad())
+                                            .country(reporteGuardado.getPais())
+                                            .lat(reporteGuardado.getLatitud())
+                                            .lng(reporteGuardado.getLongitud())
+                                            .reportDescription(reporteGuardado.getDescripcion())
+                                            .reportType(reporteGuardado.getTipoReporte())
+                                            .state(reporteGuardado.getProvincia())
+                                            .street(reporteGuardado.getCalle())
+                                            .streetNumber(reporteGuardado.getNumeroCalle())
+                                            .build();
+
+        return reporteGuardadoDTO;
     }
 
     @Override

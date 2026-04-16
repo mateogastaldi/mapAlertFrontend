@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Layout from "../../components/Layout";
-import { MapContainer, TileLayer } from "react-leaflet";
+import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useMapEvents } from 'react-leaflet/hooks';
 import AddIcon from '@mui/icons-material/Add';
 import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
@@ -12,7 +12,8 @@ import pallette from "../../styled-components/pallette.jsx"
 import ReportDialog from "../../components/ReportDialog.jsx";
 import { reverseGeocode } from "../../services/googleApi.js";
 import { useNavigate } from "react-router-dom";
-
+import { useEffect } from "react";
+import { getReportsByBounds } from "../../services/reporteService.js";
 
 const position = [-31.6353, -60.7031];
 
@@ -49,6 +50,69 @@ function OnClickMap({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog
             }
         }
     });
+    return null;
+}
+
+function MapEventHandler({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog, setValueDialog }) {
+    
+    const fetchMarkers = async () => {
+                try {
+                    const data = await getReportsByBounds(map.getBounds());
+                    setMarkers(data);
+                } catch (err) {
+                    console.error(err);
+                }
+            };
+
+    const map = useMapEvents({
+        // Se dispara cuando termina de moverse o zoomear
+        moveend: () => {
+            fetchMarkers();
+        },
+        // Carga inicial
+        load: () => {
+            fetchMarkers();
+        },
+        click: async (e) => {
+            if (activeOnClick) {
+                const reverseGeocodeApi = await handleReverseGeocodeApi(e);
+                const newMarker = {
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    report_type: valueDialog.report_type,
+                    report_description: valueDialog.report_description,
+                    street: getAddressComponent(reverseGeocodeApi, "route"),
+                    street_number: getAddressComponent(reverseGeocodeApi, "street_number"),
+                    city: getAddressComponent(reverseGeocodeApi, "locality"),
+                    state: getAddressComponent(reverseGeocodeApi, "administrative_area_level_1"),
+                    country: getAddressComponent(reverseGeocodeApi, "country"),
+                };
+                setMarkers((markers) => [...markers, newMarker]);
+                setIsActiveOnClick(false);
+                setValueDialog(null);
+            }
+        }
+    });
+
+    return null;
+}
+
+function InitialFetch({ setMarkers }) {
+    const map = useMap();
+
+    useEffect(() => {
+        const fetchMarkers = async () => {
+            try {
+                const data = await getReportsByBounds(map.getBounds());
+                setMarkers(data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        fetchMarkers();
+    }, []);
+
     return null;
 }
 
@@ -115,9 +179,19 @@ function Principal() {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {markers.map(marker => (
-                    <CustomizeMarker marker={marker} />
+                <InitialFetch setMarkers={setMarkers} />
+                {markers.map((marker, index) => (
+                    <CustomizeMarker key={marker.id ?? index} marker={marker} />
                 ))}
+
+                {/* Reemplaza OnClickMap */}
+                <MapEventHandler
+                    activeOnClick={isActiveOnClick}
+                    setMarkers={setMarkers}
+                    setIsActiveOnClick={setIsActiveOnClick}
+                    valueDialog={valueDialog}
+                    setValueDialog={setValueDialog}
+                />
                 <Fab
                     variant='extended'
                     onClick={handleOpenDialog}
@@ -242,7 +316,7 @@ function Principal() {
                 </Fab>
                 <ReportDialog open={openDialog} onClose={handleCloseDialog} />
 
-                <OnClickMap activeOnClick={isActiveOnClick} setMarkers={setMarkers} setIsActiveOnClick={setIsActiveOnClick} valueDialog={valueDialog} setValueDialog={setValueDialog} />
+                {/*<OnClickMap activeOnClick={isActiveOnClick} setMarkers={setMarkers} setIsActiveOnClick={setIsActiveOnClick} valueDialog={valueDialog} setValueDialog={setValueDialog} />*/}
             </MapContainer>
         </Layout>
 
