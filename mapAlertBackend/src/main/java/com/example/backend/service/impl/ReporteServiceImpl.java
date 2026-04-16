@@ -1,5 +1,6 @@
 package com.example.backend.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -7,17 +8,17 @@ import org.springframework.stereotype.Service;
 import com.example.backend.dto.ReporteDTO;
 import com.example.backend.entity.Reporte;
 import com.example.backend.exceptions.reportes.ReporteNotSaveException;
+import com.example.backend.exceptions.reportes.ReportesNotFindException;
 import com.example.backend.repository.ReporteRepository;
 import com.example.backend.service.ReporteService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ReporteServiceImpl implements ReporteService {
 
     private final ReporteRepository reporteRepository;
-
-    public ReporteServiceImpl(ReporteRepository reporteRepository) {
-        this.reporteRepository = reporteRepository;
-    }
 
     @Override
     public ReporteDTO crearReporte(ReporteDTO dto) {
@@ -32,6 +33,7 @@ public class ReporteServiceImpl implements ReporteService {
         reporte.setPais(dto.getCountry());
         reporte.setTipoReporte(dto.getReportType());
         reporte.setDescripcion(dto.getReportDescription());
+        reporte.setFechaCreacion(LocalDateTime.now());
 
         Reporte reporteGuardado;
 
@@ -57,12 +59,61 @@ public class ReporteServiceImpl implements ReporteService {
     }
 
     @Override
-    public List<Reporte> listarReportes() {
-        return reporteRepository.findAll();
+    public List<ReporteDTO> listarReportes() {
+        List<Reporte> reportes;
+        try{
+            reportes = reporteRepository.findAll();
+        } catch (Exception e){
+            throw new ReportesNotFindException();
+        }
+
+        List<ReporteDTO> reportesDTO = null;
+
+        for (Reporte reporte : reportes) {
+            ReporteDTO reporteDTO = new ReporteDTO().builder()
+                                        .city(reporte.getCiudad())
+                                        .country(reporte.getPais())
+                                        .lat(reporte.getLatitud())
+                                        .lng(reporte.getLongitud())
+                                        .reportDescription(reporte.getDescripcion())
+                                        .reportType(reporte.getTipoReporte())
+                                        .state(reporte.getProvincia())
+                                        .street(reporte.getCalle())
+                                        .streetNumber(reporte.getNumeroCalle())
+                                        .build();
+
+            reportesDTO.add(reporteDTO);
+        }
+
+        return reportesDTO;
     }
 
-    public List<Reporte> getReportsByBounds(Double southLat, Double westLng, Double northLat, Double eastLng){
-        return reporteRepository.findByBounds(southLat, northLat, westLng, eastLng);
+    public List<ReporteDTO> getReportsByBounds(Double southLat, Double westLng, Double northLat, Double eastLng){
+        List<Reporte> reportes;
+        try{
+            reportes = reporteRepository.findByBounds(southLat, northLat, westLng, eastLng);
+        } catch (Exception e){
+            throw new ReportesNotFindException();
+        }
+        List<ReporteDTO> reportesDTO = null;
+        
+        for (Reporte reporte : reportes) {
+            ReporteDTO reporteDTO = new ReporteDTO().builder()
+                                        .city(reporte.getCiudad())
+                                        .country(reporte.getPais())
+                                        .lat(reporte.getLatitud())
+                                        .lng(reporte.getLongitud())
+                                        .reportDescription(reporte.getDescripcion())
+                                        .reportType(reporte.getTipoReporte())
+                                        .state(reporte.getProvincia())
+                                        .street(reporte.getCalle())
+                                        .streetNumber(reporte.getNumeroCalle())
+                                        .build();
+
+            reportesDTO.add(reporteDTO);
+        }
+        
+        return reportesDTO;
         
     }
 }

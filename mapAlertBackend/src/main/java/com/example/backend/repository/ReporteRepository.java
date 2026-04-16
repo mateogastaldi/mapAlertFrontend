@@ -9,13 +9,14 @@ import org.springframework.stereotype.Repository;
 
 import com.example.backend.entity.Reporte;
 
+
 @Repository
 public interface ReporteRepository extends JpaRepository<Reporte, Long> {
     // por ahora nada más
     //con esto ya puedo hacer save, findAll, findById, deleteById, etc
     @Query("SELECT r FROM Reporte r WHERE " +
-           "r.lat BETWEEN :southLat AND :northLat AND " +
-           "r.lng BETWEEN :westLng AND :eastLng")
+           "r.latitud BETWEEN :southLat AND :northLat AND " +
+           "r.longitud BETWEEN :westLng AND :eastLng")
     List<Reporte> findByBounds(
         @Param("southLat") Double southLat,
         @Param("northLat") Double northLat,

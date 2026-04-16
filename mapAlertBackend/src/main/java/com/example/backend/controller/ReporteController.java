@@ -1,22 +1,18 @@
 package com.example.backend.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.backend.dto.ReporteDTO;
-import com.example.backend.entity.Reporte;
-import com.example.backend.repository.ReporteRepository;
 import com.example.backend.service.ReporteService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/reportes")
+@RequestMapping("/api/v1/reportes")
 @CrossOrigin // después lo ajustamos
 public class ReporteController {
 
@@ -35,16 +31,13 @@ public class ReporteController {
     }
 
     @GetMapping("/bounds")
-    public ResponseEntity<List<ReporteDTO>> listarReportes(
+    public ResponseEntity<List<ReporteDTO>> listarReportesByBounds(
             @RequestParam Double southLat,
             @RequestParam Double northLat,
             @RequestParam Double westLng,
             @RequestParam Double eastLng){
-        List<Reporte> reports = reporteService.getReportsByBounds(southLat, westLng, northLat, eastLng);
-        List<ReporteDTO> dtos = reports.stream()
-            .map(r -> new ReporteDTO(/* mapear campos */))
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+        List<ReporteDTO> reports = reporteService.getReportsByBounds(southLat, westLng, northLat, eastLng);
+        return ResponseEntity.ok(reports);
     }
 
     
