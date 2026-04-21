@@ -15,6 +15,8 @@ export const getReportsByBounds = async (bounds) => {
 };
 
 export const reportRegister = async (params) => {
+    console.log(params);
     const res = await axios.post(`${API}/crear`,params);
+    if (!res.ok) throw new Error("Error al crear el reporte");
     return res.data;
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Layout from "../../components/Layout";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useMapEvents } from 'react-leaflet/hooks';
@@ -13,7 +13,7 @@ import ReportDialog from "../../components/ReportDialog.jsx";
 import { reverseGeocode } from "../../services/googleApi.js";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { getReportsByBounds } from "../../services/reporteService.js";
+import { getReportsByBounds, reportRegister } from "../../services/reporteService.js";
 
 const position = [-31.6353, -60.7031];
 
@@ -36,10 +36,10 @@ function OnClickMap({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog
                 const newMarker = {
                     lat: e.latlng.lat,
                     lng: e.latlng.lng,
-                    report_type: valueDialog.report_type,
-                    report_description: valueDialog.report_description,
+                    reportType: valueDialog.report_type,
+                    reportDescription: valueDialog.report_description,
                     street: getAddressComponent(reverseGeocodeApi, "route"),
-                    street_number: getAddressComponent(reverseGeocodeApi, "street_number"),
+                    streetNumber: getAddressComponent(reverseGeocodeApi, "street_number"),
                     city: getAddressComponent(reverseGeocodeApi, "locality"),
                     state: getAddressComponent(reverseGeocodeApi, "administrative_area_level_1"),
                     country: getAddressComponent(reverseGeocodeApi, "country"),
@@ -53,7 +53,7 @@ function OnClickMap({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog
     return null;
 }
 
-function MapEventHandler({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog, setValueDialog }) {
+function MapEventHandler({ activeOnClickRef, setMarkers, setIsActiveOnClick, valueDialog, setValueDialog }) {
     
     const fetchMarkers = async () => {
                 try {
@@ -74,20 +74,27 @@ function MapEventHandler({ activeOnClick, setMarkers, setIsActiveOnClick, valueD
             fetchMarkers();
         },
         click: async (e) => {
-            if (activeOnClick) {
+            if (activeOnClickRef.current) {
                 const reverseGeocodeApi = await handleReverseGeocodeApi(e);
                 const newMarker = {
                     lat: e.latlng.lat,
                     lng: e.latlng.lng,
-                    report_type: valueDialog.report_type,
-                    report_description: valueDialog.report_description,
+                    reportType: valueDialog.report_type,
+                    reportDescription: valueDialog.report_description,
                     street: getAddressComponent(reverseGeocodeApi, "route"),
-                    street_number: getAddressComponent(reverseGeocodeApi, "street_number"),
+                    streetNumber: getAddressComponent(reverseGeocodeApi, "street_number"),
                     city: getAddressComponent(reverseGeocodeApi, "locality"),
                     state: getAddressComponent(reverseGeocodeApi, "administrative_area_level_1"),
                     country: getAddressComponent(reverseGeocodeApi, "country"),
                 };
-                setMarkers((markers) => [...markers, newMarker]);
+                try{
+                    await reportRegister(newMarker);
+                    setMarkers((markers) => [...markers, newMarker])
+                } catch (err){
+                    console.log(err);
+                }
+
+                activeOnClickRef.current = false;
                 setIsActiveOnClick(false);
                 setValueDialog(null);
             }
@@ -119,59 +126,32 @@ function InitialFetch({ setMarkers }) {
 function Principal() {
     const navigate = useNavigate();
 
-    const [markers, setMarkers] = useState([
-        {
-            lat: -31.6353,
-            lng: -60.7031,
-            report_type: "Calle sin luz",
-            report_description: "Calle sin luz desde las 22hs",
-            street: "location.street",
-            street_number: "location.street_number",
-            city: "location.city",
-            state: "location.state",
-            country: "location.country",
-
-        },
-        {
-            lat: -31.63,
-            lng: -60.70,
-            report_type: "Bache",
-            report_description: "Luz cortada desde las 22hs",
-            street: "",
-            street_number: "location.street_number",
-            city: "location.city",
-            state: "location.state",
-            country: "location.country",
-        },
-        {
-            lat: -31.64,
-            lng: -60.70,
-            report_type: "Corte de electricidad",
-            report_description: "Luz cortada desde las 22hs",
-            street: "",
-            street_number: "",
-            city: "",
-            state: "",
-            country: "",
-        },
-
-    ]);
+    const [markers, setMarkers] = useState([]);
 
     const [isActiveOnClick, setIsActiveOnClick] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [valueDialog, setValueDialog] = useState(null);
+    const isActiveOnClickRef = useRef(false);
 
     const handleOpenDialog = () => setOpenDialog(true);
-    const handleCloseDialog = (e) => {
+
+    const handleCloseDialog = async (e) => {
         setOpenDialog(false);
-        setValueDialog(e);
-        e.needOnClick || e.needOnClick === undefined ? setIsActiveOnClick(true) : setIsActiveOnClick(false);
+        if (!e) return;
+
         if (!e.needOnClick) {
-            const { needOnClick, ...newMarker } = e;
-            setMarkers((markers) => [...markers, newMarker]);
+            const { needOnClick, ...reporteDTO } = e;
+            try {
+                await reportRegister(reporteDTO);
+            } catch (err) {
+                console.error(err);
+            }
+        } else {
+            setValueDialog(e);
+            setIsActiveOnClick(true);
+            isActiveOnClickRef.current = true;
         }
     };
-
     return (
         <Layout>
             <MapContainer center={position} zoom={14} scrollWheelZoom={true}>
@@ -186,7 +166,7 @@ function Principal() {
 
                 {/* Reemplaza OnClickMap */}
                 <MapEventHandler
-                    activeOnClick={isActiveOnClick}
+                    activeOnClickRef={isActiveOnClickRef}
                     setMarkers={setMarkers}
                     setIsActiveOnClick={setIsActiveOnClick}
                     valueDialog={valueDialog}

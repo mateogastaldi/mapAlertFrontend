@@ -12,6 +12,7 @@ import {
 } from "@react-google-maps/api";
 import { useRef,  } from "react";
 
+const libraries = ["places"];
 
 function ReportDialog({ open, onClose }) {
   const [valueReport, setValueReport] = React.useState(null);
@@ -22,7 +23,7 @@ function ReportDialog({ open, onClose }) {
   const [description, setDescription] = React.useState("");
   const [location, setLocation] = React.useState(null);
 
-  const libraries = ["places"];
+  
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
@@ -36,7 +37,7 @@ function ReportDialog({ open, onClose }) {
   };
 
   const handleCloseCross = () => {
-    handleClose(null);
+    onClose(null);
   };
   const handleAccept = () => {
     let valueAccept;

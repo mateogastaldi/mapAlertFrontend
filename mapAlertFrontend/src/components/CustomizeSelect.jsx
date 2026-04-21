@@ -14,18 +14,22 @@ const incidentes = [
     {
         title:"Accidente de trafico",
         img: accidenteAutos,
+        reportType: "ACCIDENTE" 
     },
     {
         title:'Calle sin luz',
         img: sinLuz,
+        reportType:"CALLE_SIN_LUZ"
     },
     {
         title: 'Corte de electricidad',
         img: sinElectricidad,
+        reportType:"CORTE_DE_LUZ"
     },
     {
         title: 'Bache',
         img: bache,
+        reportType:"BACHE"
     }
 
 ];
@@ -50,7 +54,7 @@ export default function CustomizeSelect({ value, label, onChange, sx}) {
         }}
       >
         {incidentes.map(incidente => (
-           <MenuItem value={incidente.title} sx={{
+           <MenuItem value={incidente.reportType} sx={{
             display:'flex',
             flexDirection:'row',
             justifyContent:'flex-start',
