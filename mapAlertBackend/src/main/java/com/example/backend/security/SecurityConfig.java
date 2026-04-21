@@ -37,6 +37,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authRequest ->
                 authRequest
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/v1/reportes/**").permitAll()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sessionManager ->
@@ -53,7 +54,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // El puerto exacto donde corre Vite (React)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); 
+        configuration.setAllowedOriginPatterns(List.of("*"));
         
         // Métodos permitidos (incluyendo OPTIONS que es el "preflight" de CORS)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

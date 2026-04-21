@@ -29,10 +29,10 @@ public class Reporte {
     private Long id;
 
     @Column(name = "latitud", nullable = false)
-    private String latitud;
+    private Double latitud;
 
     @Column(name = "longitud", nullable = false)
-    private String longitud;
+    private Double longitud;
 
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;

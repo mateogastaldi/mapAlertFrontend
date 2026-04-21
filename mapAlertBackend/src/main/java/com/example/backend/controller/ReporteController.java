@@ -13,7 +13,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/reportes")
-@CrossOrigin // después lo ajustamos
+@CrossOrigin(origins = "http://localhost:5174") // después lo ajustamos
 public class ReporteController {
 
     private final ReporteService reporteService;
@@ -36,7 +36,7 @@ public class ReporteController {
             @RequestParam Double northLat,
             @RequestParam Double westLng,
             @RequestParam Double eastLng){
-        List<ReporteDTO> reports = reporteService.getReportsByBounds(southLat, westLng, northLat, eastLng);
+        List<ReporteDTO> reports = reporteService.getReportsByBounds(southLat, northLat, westLng, eastLng);
         return ResponseEntity.ok(reports);
     }
 

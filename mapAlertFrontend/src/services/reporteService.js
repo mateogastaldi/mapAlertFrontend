@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:8080/api/reportes";
+const API = "http://localhost:8080/api/v1/reportes";
 
 export const getReportsByBounds = async (bounds) => {
     const params = new URLSearchParams({

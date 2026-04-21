@@ -17,11 +17,11 @@ import com.example.backend.enums.TipoReporte;
 @AllArgsConstructor
 public class ReporteDTO {
 //uso validaciones aca para evitar desde el principio datos incorrectos
-    @NotBlank(message = "La latitud es obligatoria")
-    private String lat;
+    @NotNull(message = "La latitud es obligatoria")
+    private Double lat;
 
-    @NotBlank(message = "La longitud es obligatoria")
-    private String lng;
+    @NotNull(message = "La longitud es obligatoria")
+    private Double lng;
 
 
     private String street;

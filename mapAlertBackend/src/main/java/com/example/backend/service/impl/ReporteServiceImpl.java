@@ -1,6 +1,7 @@
 package com.example.backend.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -88,31 +89,28 @@ public class ReporteServiceImpl implements ReporteService {
         return reportesDTO;
     }
 
-    public List<ReporteDTO> getReportsByBounds(Double southLat, Double westLng, Double northLat, Double eastLng){
+    public List<ReporteDTO> getReportsByBounds(Double southLat, Double northLat, Double westLng , Double eastLng){
         List<Reporte> reportes;
         try{
             reportes = reporteRepository.findByBounds(southLat, northLat, westLng, eastLng);
         } catch (Exception e){
             throw new ReportesNotFindException();
         }
-        List<ReporteDTO> reportesDTO = null;
+        List<ReporteDTO> reportesDTO = new ArrayList<>();
         
         for (Reporte reporte : reportes) {
-            ReporteDTO reporteDTO = new ReporteDTO().builder()
-                                        .city(reporte.getCiudad())
-                                        .country(reporte.getPais())
-                                        .lat(reporte.getLatitud())
-                                        .lng(reporte.getLongitud())
-                                        .reportDescription(reporte.getDescripcion())
-                                        .reportType(reporte.getTipoReporte())
-                                        .state(reporte.getProvincia())
-                                        .street(reporte.getCalle())
-                                        .streetNumber(reporte.getNumeroCalle())
-                                        .build();
-
-            reportesDTO.add(reporteDTO);
+            reportesDTO.add(new ReporteDTO().builder()
+                            .city(reporte.getCiudad())
+                            .country(reporte.getPais())
+                            .lat(reporte.getLatitud())
+                            .lng(reporte.getLongitud())
+                            .reportDescription(reporte.getDescripcion())
+                            .reportType(reporte.getTipoReporte())
+                            .state(reporte.getProvincia())
+                            .street(reporte.getCalle())
+                            .streetNumber(reporte.getNumeroCalle())
+                            .build());
         }
-        
         return reportesDTO;
         
     }
