@@ -28,30 +28,6 @@ const handleReverseGeocodeApi = async (e) => {
     return result;
 }
 
-function OnClickMap({ activeOnClick, setMarkers, setIsActiveOnClick, valueDialog, setValueDialog }) {
-    const map = useMapEvents({
-        click: async (e) => {
-            if (activeOnClick) {
-                const reverseGeocodeApi = await handleReverseGeocodeApi(e);
-                const newMarker = {
-                    lat: e.latlng.lat,
-                    lng: e.latlng.lng,
-                    reportType: valueDialog.report_type,
-                    reportDescription: valueDialog.report_description,
-                    street: getAddressComponent(reverseGeocodeApi, "route"),
-                    streetNumber: getAddressComponent(reverseGeocodeApi, "street_number"),
-                    city: getAddressComponent(reverseGeocodeApi, "locality"),
-                    state: getAddressComponent(reverseGeocodeApi, "administrative_area_level_1"),
-                    country: getAddressComponent(reverseGeocodeApi, "country"),
-                };
-                setMarkers((markers) => [...markers, newMarker]);
-                setIsActiveOnClick(false);
-                setValueDialog(null);
-            }
-        }
-    });
-    return null;
-}
 
 function MapEventHandler({ activeOnClickRef, setMarkers, setIsActiveOnClick, valueDialog, setValueDialog }) {
     
