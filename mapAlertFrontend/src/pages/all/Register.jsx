@@ -6,7 +6,7 @@ import logo from "../../assets/logo png.png";
 import PasswordInputBase from "../../components/PassworInputBase";
 import ButtonAcceptBase from "../../components/ButtonAcceptBase";
 import ButtonCancelBase from "../../components/ButtonCancelBase";
-import { register } from "../../services/authService";
+import { useAuth } from "../../hooks/useAuth";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -17,6 +17,7 @@ const marginXButton = "8px";
 function Register() {
     const [openCancelDialog, setOpenCancelDialog] = useState(false);
     const navigate = useNavigate();
+    const { register } = useAuth();
 
     const [form, setForm] = useState({
         username: "",
@@ -28,15 +29,11 @@ function Register() {
 
     const handleSubmit = async () => {
         try {
-            console.log(form);
             await register(form);
-            alert("Usuario creado correctamente");
-
-            // opcional: redirigir al login
-            window.location.href = "/login";
+            window.location.href = "/";
 
         } catch (err) {
-            console.error(err); // 🔥 VER ERROR REAL
+            console.error(err);
             alert(err.response?.data?.message || "Error al registrarse");
         }
     };
