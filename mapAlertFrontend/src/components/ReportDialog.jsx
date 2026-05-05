@@ -44,20 +44,20 @@ function ReportDialog({ open, onClose }) {
     if(selectedCargarDireccion){
       valueAccept = {
         street: location.street,
-        street_number: location.street_number,
+        streetNumber: location.street_number,
         city: location.city,
         state: location.state,
         country: location.country,
         lat: location.lat,
         lng: location.lng,
-        report_type:valueReport,
-        report_description: description,
+        reportType:valueReport,
+        reportDescription: description,
         needOnClick: false
       }
     }else{
       valueAccept = {
-        report_type:valueReport,
-        report_description: description,
+        reportType:valueReport,
+        reportDescription: description,
         needOnClick: true
       }
     }
@@ -84,7 +84,7 @@ function ReportDialog({ open, onClose }) {
       setDirection(address.formatted_address);
       setLocation({
         street:street,
-        street_number:street_number,
+        streetNumber:street_number,
         city:city,
         state:state,
         country:country,

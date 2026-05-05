@@ -13,3 +13,14 @@ export const registerService = async (data) => {
     localStorage.setItem("token", response.data.token);
     return response.data;
 };
+
+// Validates the stored token against the backend.
+// Throws on 401/network error so the caller can treat it as invalid.
+export const validateTokenService = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    const response = await axios.get(`${API}/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+};

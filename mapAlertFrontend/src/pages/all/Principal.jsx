@@ -17,8 +17,10 @@ import { useEffect } from "react";
 import {
   getReportsByBounds,
   reportRegister,
+  getReportsByBoundsAndFilters,
 } from "../../services/reporteService.js";
 import { useAuth } from "../../hooks/useAuth.jsx";
+import FilterDialog from "../../components/FilterDialog.jsx";
 
 const position = [-31.6353, -60.7031];
 
@@ -40,10 +42,11 @@ function MapEventHandler({
   setIsActiveOnClick,
   valueDialog,
   setValueDialog,
+  filters,
 }) {
   const fetchMarkers = async () => {
     try {
-      const data = await getReportsByBounds(map.getBounds());
+      const data = await getReportsByBoundsAndFilters(map.getBounds(),filters);
       setMarkers(data);
     } catch (err) {
       console.error(err);
@@ -65,8 +68,8 @@ function MapEventHandler({
         const newMarker = {
           lat: e.latlng.lat,
           lng: e.latlng.lng,
-          reportType: valueDialog.report_type,
-          reportDescription: valueDialog.report_description,
+          reportType: valueDialog.reportType,
+          reportDescription: valueDialog.reportDescription,
           street: getAddressComponent(reverseGeocodeApi, "route"),
           streetNumber: getAddressComponent(reverseGeocodeApi, "street_number"),
           city: getAddressComponent(reverseGeocodeApi, "locality"),
@@ -116,10 +119,15 @@ function Principal() {
   const navigate = useNavigate();
 
   const [markers, setMarkers] = useState([]);
-
+  const [openFilter, setOpenFilter] = useState(false);
   const [isActiveOnClick, setIsActiveOnClick] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [valueDialog, setValueDialog] = useState(null);
+  const [filtros, setFiltros] = useState({
+    soloMios: false,
+    desdeFecha: null,
+    categorias: []
+  })
   const isActiveOnClickRef = useRef(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -144,7 +152,15 @@ function Principal() {
     }
   };
 
-  const { isLoggedIn, user, logout } = useAuth();
+  const handleCloseFilter = (filtrosDialog) => {
+    setOpenFilter(false);
+    if (!filtrosDialog) return;
+    console.log(filtrosDialog); 
+    setFiltros(filtrosDialog);
+
+  };
+
+  const { isLoggedIn, isLoading, user, logout } = useAuth();
 
   const fabStyle = {
     zIndex: 1000,
@@ -182,9 +198,10 @@ function Principal() {
           setIsActiveOnClick={setIsActiveOnClick}
           valueDialog={valueDialog}
           setValueDialog={setValueDialog}
+          filters={filtros}
         />
 
-        {isLoggedIn ? (
+        {!isLoading && isLoggedIn ? (
           <>
             <Fab
               size={isMobile ? "small" : "medium"}
@@ -211,6 +228,7 @@ function Principal() {
               <AddIcon fontSize={isMobile ? "small" : "medium"} />
             </Fab>
             <Fab
+              onClick={() => setOpenFilter(true)}
               size={isMobile ? "small" : "medium"}
               sx={{
                 ...fabStyle,
@@ -221,11 +239,13 @@ function Principal() {
             >
               <FilterAltOutlinedIcon fontSize={isMobile ? "small" : "medium"} />
             </Fab>
+            <FilterDialog open={openFilter} onClose={handleCloseFilter} />
             <ReportDialog open={openDialog} onClose={handleCloseDialog} />
           </>
-        ) : (
+        ) : !isLoading ? (
           <>
             <Fab
+              onClick={() => setOpenFilter(true)}
               size={isMobile ? "small" : "medium"}
               sx={{
                 ...fabStyle,
@@ -236,6 +256,7 @@ function Principal() {
             >
               <FilterAltOutlinedIcon fontSize={isMobile ? "small" : "medium"} />
             </Fab>
+            <FilterDialog open={openFilter} onClose={handleCloseFilter} />
 
             <Fab
               variant="extended"
@@ -267,7 +288,7 @@ function Principal() {
               {isMobile ? "Registro" : "Crear Usuario"}
             </Fab>
           </>
-        )}
+        ) : null}
 
         {/*<OnClickMap activeOnClick={isActiveOnClick} setMarkers={setMarkers} setIsActiveOnClick={setIsActiveOnClick} valueDialog={valueDialog} setValueDialog={setValueDialog} />*/}
       </MapContainer>
