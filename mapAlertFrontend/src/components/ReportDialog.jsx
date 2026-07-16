@@ -2,103 +2,62 @@ import * as React from "react";
 import "./styles.css";
 import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
-import { Divider, Typography, Box, Button, TextField } from "@mui/material";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import { Divider, Typography, Box, TextField } from "@mui/material";
 import CustomizeSelect from "./CustomizeSelect";
 import CloseIcon from "@mui/icons-material/Close";
+import ButtonAcceptBase from "./ButtonAcceptBase";
+import ButtonCancelBase from "./ButtonCancelBase";
 import pallette from "../styled-components/pallette";
-import {
-  StandaloneSearchBox,
-  useJsApiLoader,
-} from "@react-google-maps/api";
-import { useRef,  } from "react";
 
-const libraries = ["places"];
-
-function ReportDialog({ open, onClose }) {
-  const [valueReport, setValueReport] = React.useState(null);
-  const [selectedCargarDireccion, setSelectedCargarDireccion] =
-    React.useState(false);
-  const [selectedElegirPunto, setSelectedElegirPunto] = React.useState(false);
-  const [direction, setDirection] = React.useState(null);
+function ReportDialog({ open, onClose, lat, lng }) {
+  const [valueReport, setValueReport] = React.useState("");
   const [description, setDescription] = React.useState("");
-  const [location, setLocation] = React.useState(null);
+  const [street, setStreet] = React.useState("");
+  const [streetNumber, setStreetNumber] = React.useState("");
+  const [city, setCity] = React.useState("");
+  const [state, setState] = React.useState("");
+  const [country, setCountry] = React.useState("Argentina");
+  const [errorText, setErrorText] = React.useState("");
 
-  
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_KEY,
-    libraries,
-  });
-
-  const inputref = useRef(null);
-
-  const handleClose = (value) => {
-    onClose(value);
-  };
-
-  const handleCloseCross = () => {
+  const handleClose = () => {
+    setErrorText("");
     onClose(null);
   };
+
   const handleAccept = () => {
-    let valueAccept;
-    if(selectedCargarDireccion){
-      valueAccept = {
-        street: location.street,
-        streetNumber: location.street_number,
-        city: location.city,
-        state: location.state,
-        country: location.country,
-        lat: location.lat,
-        lng: location.lng,
-        reportType:valueReport,
-        reportDescription: description,
-        needOnClick: false
-      }
-    }else{
-      valueAccept = {
-        reportType:valueReport,
-        reportDescription: description,
-        needOnClick: true
-      }
-    }
-    console.log("Value accept",valueAccept);
-    handleClose(valueAccept);
-  };
-
-  const getAddressComponent = (address,type) => {
-    const component = address.address_components.find(a => a.types[0].includes(type));
-    return component ? component.long_name : "";
-  }
-
-  const handleOnPlacesChanged = () => {
-    const address = (inputref.current.getPlaces())[0];
-    if(address){
-      console.log(address);
-      const street = getAddressComponent(address,"route");
-      const street_number = getAddressComponent(address,"street_number");
-      const city = getAddressComponent(address,"locality");
-      const country = getAddressComponent(address,"country");
-      const state = getAddressComponent(address,"administrative_area_level_1");
-      const lng = address.geometry.location.lng(); 
-      const lat = address.geometry.location.lat();
-      setDirection(address.formatted_address);
-      setLocation({
-        street:street,
-        streetNumber:street_number,
-        city:city,
-        state:state,
-        country:country,
-        lat:lat,
-        lng:lng
-      })
-
+    if (!valueReport || !street || !city || !state || !country) {
+      setErrorText("Por favor complete los campos obligatorios (*)");
+      return;
     }
     
+    setErrorText("");
+    onClose({
+      lat,
+      lng,
+      reportType: valueReport,
+      reportDescription: description,
+      street,
+      streetNumber: streetNumber ? parseInt(streetNumber) : null,
+      city,
+      state,
+      country,
+    });
   };
 
-  
-
-  console.log(isLoaded);
+  React.useEffect(() => {
+    if (open) {
+      setValueReport("");
+      setDescription("");
+      setStreet("");
+      setStreetNumber("");
+      setCity("");
+      setState("");
+      setCountry("Argentina");
+      setErrorText("");
+    }
+  }, [open]);
 
   return (
     <Dialog
@@ -114,250 +73,100 @@ function ReportDialog({ open, onClose }) {
     >
       <Box
         sx={{
-          display: "block",
-          marginY: 1,
-          width: "100%",
-        }}
-      >
-        <Box
-          sx={{
-            height: "15px",
-            width: "100%",
-            m: 0,
-            p: 0,
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 1.5,
-          }}
-        >
-          <DialogTitle
-            sx={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-              paddingX: 0,
-              paddingTop: 0,
-              pb: 0,
-            }}
-          >
-            Reportar Incidente
-          </DialogTitle>
-          <Button
-            onClick={handleCloseCross}
-            sx={{
-              height: "100%",
-              width: "5%",
-              m: 0,
-              p: 0,
-              minWidth: 0,
-              minHeight: 0,
-            }}
-          >
-            <CloseIcon sx={{ height: "100%", width: "100%", m: 0, p: 0 }} />
-          </Button>
-        </Box>
-
-        <Typography color="text.secondary">
-          Ayuda a la comunidad reportando un incidente
-        </Typography>
-      </Box>
-      <Divider />
-      <Box
-        sx={{
           display: "flex",
-          flexDirection: "column",
-          marginY: 1,
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 1.5,
         }}
       >
-        <Typography variant="button text" sx={{ mt: 1, mb: 0.5 }}>
-          Tipo de Incidente
-        </Typography>
+        <DialogTitle sx={{ p: 0, fontWeight: "bold", color: pallette.primary }}>
+          Registrar Incidente
+        </DialogTitle>
+        <CloseIcon onClick={handleClose} sx={{ cursor: "pointer", color: "text.secondary" }} />
+      </Box>
+
+      <Typography color="text.secondary" sx={{ mb: 1.5 }}>
+        Completa los datos de la dirección e incidente para guardarlo.
+      </Typography>
+
+      <Divider />
+
+      <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
+        {errorText && (
+          <Typography color="error" sx={{ fontWeight: 500, fontSize: "0.85rem" }}>
+            {errorText}
+          </Typography>
+        )}
+
         <CustomizeSelect
           value={valueReport}
           onChange={(e) => setValueReport(e.target.value)}
-          label="Incidente"
-          sx={{ mt: 0.5, mb: 1 }}
+          label="Incidente *"
+          sx={{ width: "100%" }}
         />
-        {valueReport ? (
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="button text">Ubicación</Typography>
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-between",
-                mb: 1,
-                mt: 0.5,
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  setSelectedCargarDireccion(false);
-                  setSelectedElegirPunto(true);
-                  setDirection(null);
-                }}
-                sx={{
-                  flex: 1,
-                  mr: 1,
-                  borderRadius: "12px",
-                  borderColor: selectedElegirPunto
-                    ? pallette.primary
-                    : "rgba(0,0,0,0.23)",
-                  color: selectedElegirPunto ? pallette.primary : "black",
-                  "&:hover": {
-                    borderColor: pallette.primary,
-                    bgcolor: "transparent",
-                    color: pallette.primary,
-                  },
-                  "&:active": {
-                    borderColor: pallette.primary,
-                    color: pallette.primary,
-                  },
-                  "&.Mui-focused": {
-                    borderColor: pallette.primary,
-                    color: pallette.primary,
-                  },
-                  "&.Mui-focusVisible": {
-                    borderColor: pallette.primary,
-                  },
-                }}
-              >
-                Marcar en el mapa
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={() => {
-                  setSelectedCargarDireccion(true);
-                  setSelectedElegirPunto(false);
-                }}
-                sx={{
-                  flex: 1,
-                  ml: 1,
-                  borderRadius: "12px",
-                  borderColor: selectedCargarDireccion
-                    ? pallette.primary
-                    : "rgba(0,0,0,0.23)",
-                  color: selectedCargarDireccion ? pallette.primary : "black",
-                  "&:hover": {
-                    borderColor: pallette.primary,
-                    bgcolor: "transparent",
-                    color: pallette.primary,
-                  },
-                  "&:active": {
-                    borderColor: pallette.primary,
-                    color: pallette.primary,
-                  },
-                  "&.Mui-focused": {
-                    borderColor: pallette.primary,
-                    color: pallette.primary,
-                  },
-                  "&.Mui-focusVisible": {
-                    borderColor: pallette.primary,
-                  },
-                }}
-              >
-                Ingresar direccion
-              </Button>
-            </Box>
-            {selectedCargarDireccion ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-start",
-                  mt: 1,
-                  mb: 1,
-                  p: 0,
-                }}
-              >
-                <Typography variant="button text" sx={{ m: 0 }}>
-                  Cargar dirección
-                </Typography>
-                {isLoaded && 
-                  <StandaloneSearchBox
-                    onLoad={(ref) => (inputref.current = ref)}
-                    onPlacesChanged={handleOnPlacesChanged}
-                  >
-                    <TextField
-                      id="outlined-basic"
-                      variant="outlined"
-                      size="small"
-                      value={direction}
-                      placeholder=""
-                      onChange={(e) => setDirection(e.target.value)}
-                      sx={{
-                        width:"100%",
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "12px",
-                          "& fieldset": {
-                            borderRadius: "12px",
-                          },
-                        },
-                        mt: 0.5,
-                      }}
-                    />
-                  </StandaloneSearchBox>
-                }
-              </Box>
-            ) : (
-              <></>
-            )}
-          </Box>
-        ) : (
-          <></>
-        )}
-        <Box
-          sx={{
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            mt: 1,
-          }}
-        >
-          <Typography variant="button text" sx={{ m: 0, width: "100%" }}>
-            Descripción
-          </Typography>
-          <TextField
-            variant="outlined"
-            size="medium"
-            onChange={(e) => setDescription(e.target.value)}
-            sx={{
-              width: "100%",
-              mb: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "12px",
-                "& fieldset": {
-                  borderRadius: "12px",
-                },
-              },
-            }}
-          />
 
-          <Button
-            disabled={
-              selectedCargarDireccion
-                ? direction
-                  ? false
-                  : true
-                : !selectedElegirPunto
-            }
-            sx={{
-              bgcolor: pallette.primary,
-              color: pallette.secondary,
-              borderRadius: "12px",
-              mt: 1,
-            }}
-            onClick={handleAccept}
-          >
-            ACEPTAR
-          </Button>
-        </Box>
-      </Box>
+        <TextField
+          label="Calle *"
+          value={street}
+          onChange={(e) => setStreet(e.target.value)}
+          size="small"
+          fullWidth
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+
+        <TextField
+          label="Altura (Nro)"
+          value={streetNumber}
+          onChange={(e) => setStreetNumber(e.target.value)}
+          type="number"
+          size="small"
+          fullWidth
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+
+        <TextField
+          label="Ciudad *"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          size="small"
+          fullWidth
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+
+        <TextField
+          label="Provincia *"
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+          size="small"
+          fullWidth
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+
+        <TextField
+          label="País *"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+          size="small"
+          fullWidth
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+
+        <TextField
+          label="Descripción"
+          multiline
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          fullWidth
+          placeholder="Describe el incidente..."
+          InputProps={{ sx: { borderRadius: "12px" } }}
+        />
+      </DialogContent>
+
+      <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1 }}>
+        <ButtonCancelBase text="Cancelar" mw="80px" onClick={handleClose} />
+        <ButtonAcceptBase text="Registrar" mw="80px" onClick={handleAccept} />
+      </DialogActions>
     </Dialog>
   );
 }

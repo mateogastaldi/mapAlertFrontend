@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Popup, Marker } from "react-leaflet";
-import { Box, Typography, Button, Divider, Tooltip } from "@mui/material";
+import { Box, Typography, Button, Divider, Tooltip, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, TextField } from "@mui/material";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import L from "leaflet";
 
 import pothole from "../assets/bache.png";
@@ -14,7 +16,11 @@ import defaultMarker from "../assets/marca-de-ubicacion.png";
 import accidenteDeTrafico from "../assets/accidente-de-auto.png";
 
 import { useAuth } from "../hooks/useAuth";
-import { rateReport, verifyReport, dismissReport } from "../services/reporteService";
+import { rateReport, verifyReport, dismissReport, editReport, deleteReport } from "../services/reporteService";
+import ButtonAcceptBase from "./ButtonAcceptBase";
+import ButtonCancelBase from "./ButtonCancelBase";
+import CustomizeSelect from "./CustomizeSelect";
+import pallette from "../styled-components/pallette";
 
 const ICON_MAP = {
   CALLE_SIN_LUZ: powerOutage,
@@ -27,12 +33,11 @@ const AUTH_HINT = "Iniciá sesión para interactuar con los reportes";
 
 // ─── Star Rating ─────────────────────────────────────────────────────────────
 
-function StarRating({ reportId, isLoggedIn }) {
-  const [rating, setRating] = useState(0);
+function StarRating({ reportId, initialRating, isLoggedIn }) {
+  const [rating, setRating] = useState(initialRating || 0);
   const [hover, setHover] = useState(0);
   const [hasRated, setHasRated] = useState(false);
 
-  // locked = cannot interact (guest OR already voted)
   const locked = !isLoggedIn || hasRated;
   const active = hover || rating;
 
@@ -44,7 +49,6 @@ function StarRating({ reportId, isLoggedIn }) {
       await rateReport(reportId, value);
     } catch (err) {
       console.error(err);
-      // roll back on failure so the user can retry
       setRating(0);
       setHasRated(false);
     }
@@ -57,10 +61,9 @@ function StarRating({ reportId, isLoggedIn }) {
         color="text.secondary"
         sx={{ display: "block", mb: 0.5 }}
       >
-        Calificar reporte
+        Calificar reporte (Promedio: {initialRating ? initialRating.toFixed(1) : "0.0"})
       </Typography>
 
-      {/* Tooltip wraps the whole star row so it works even when stars are "disabled" */}
       <Tooltip
         title={!isLoggedIn ? AUTH_HINT : ""}
         placement="top"
@@ -76,7 +79,6 @@ function StarRating({ reportId, isLoggedIn }) {
               sx={{
                 cursor: locked ? "default" : "pointer",
                 color: active >= star ? "#f59e0b" : "#cbd5e1",
-                // dim stars for guests but keep them visible
                 opacity: !isLoggedIn ? 0.45 : 1,
                 display: "flex",
                 transition: "color 0.1s, transform 0.1s",
@@ -103,10 +105,9 @@ function StarRating({ reportId, isLoggedIn }) {
 
 // ─── Verification Buttons ─────────────────────────────────────────────────────
 
-function VerificationButtons({ reportId, initialConfirmCount, initialDismissCount, isLoggedIn }) {
+function VerificationButtons({ reportId, initialConfirmCount, initialDismissCount, isLoggedIn, onDeactivated }) {
   const [confirmCount, setConfirmCount] = useState(initialConfirmCount);
   const [dismissCount, setDismissCount] = useState(initialDismissCount);
-  // 'confirm' | 'dismiss' | null
   const [vote, setVote] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -117,14 +118,18 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
     if (locked || loading) return;
     setLoading(true);
     try {
+      let res;
       if (type === "confirm") {
-        await verifyReport(reportId);
+        res = await verifyReport(reportId);
         setConfirmCount((c) => c + 1);
       } else {
-        await dismissReport(reportId);
+        res = await dismissReport(reportId);
         setDismissCount((c) => c + 1);
       }
       setVote(type);
+      if (res && res.activo === false) {
+        if (onDeactivated) onDeactivated();
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -142,14 +147,12 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
         ¿El incidente sigue activo?
       </Typography>
 
-      {/* One tooltip over both buttons — works because the Box (not the buttons) gets hover */}
       <Tooltip
         title={!isLoggedIn ? AUTH_HINT : ""}
         placement="top"
         arrow
       >
         <Box sx={{ display: "flex", gap: 1 }}>
-          {/* ── "Still there?" ── */}
           <Button
             variant={vote === "confirm" ? "contained" : "outlined"}
             size="small"
@@ -167,14 +170,12 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
                 bgcolor: "success.main",
                 "&.Mui-disabled": { bgcolor: "success.light", color: "white" },
               }),
-              // dim for guests
               ...(!isLoggedIn && { opacity: 0.5 }),
             }}
           >
             Sigue ahí
           </Button>
 
-          {/* ── "Not there anymore" ── */}
           <Button
             variant={vote === "dismiss" ? "contained" : "outlined"}
             size="small"
@@ -186,7 +187,6 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
               borderRadius: "20px",
               textTransform: "none",
               fontSize: "0.72rem",
-              // red tint when unvoted
               ...(vote !== "dismiss" && {
                 color: "error.main",
                 borderColor: "error.main",
@@ -204,7 +204,6 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
         </Box>
       </Tooltip>
 
-      {/* Community counts */}
       {(confirmCount > 0 || dismissCount > 0) && (
         <Box sx={{ display: "flex", justifyContent: "space-between", mt: 0.75 }}>
           {confirmCount > 0 && (
@@ -226,50 +225,221 @@ function VerificationButtons({ reportId, initialConfirmCount, initialDismissCoun
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function CustomizeMarker({ marker }) {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
+  const [reportData, setReportData] = useState(marker);
+  const [deleted, setDeleted] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
+
+  // Edit fields
+  const [editType, setEditType] = useState(marker.reportType);
+  const [editDescription, setEditDescription] = useState(marker.reportDescription || "");
+
+  useEffect(() => {
+    setReportData(marker);
+    setEditType(marker.reportType);
+    setEditDescription(marker.reportDescription || "");
+  }, [marker]);
+
+  if (deleted || !reportData || reportData.activo === false) {
+    return null;
+  }
 
   const iconUrl = L.icon({
-    iconUrl: ICON_MAP[marker.reportType] || defaultMarker,
+    iconUrl: ICON_MAP[reportData.reportType] || defaultMarker,
     iconSize: [40, 40],
   });
 
-  // Backend may return camelCase or snake_case depending on Jackson config
-  const description =
-    marker.reportDescription ?? marker.report_description ?? "";
+  const description = reportData.reportDescription ?? "";
+  const streetName = reportData.street || "";
+  const streetNum = reportData.streetNumber ? ` ${reportData.streetNumber}` : "";
+
+  // Check if owner or admin
+  const isOwner = isLoggedIn && user && reportData.usuarioId === user.id;
+  const isAdmin = isLoggedIn && user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN");
+  const canManage = isOwner || isAdmin;
+
+  const handleOpenEdit = () => {
+    setEditType(reportData.reportType);
+    setEditDescription(description);
+    setOpenEdit(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      const updatedDto = await editReport(reportData.id, {
+        lat: reportData.lat,
+        lng: reportData.lng,
+        street: reportData.street,
+        streetNumber: reportData.streetNumber,
+        city: reportData.city,
+        state: reportData.state,
+        country: reportData.country,
+        reportType: editType,
+        reportDescription: editDescription
+      });
+      setReportData((prev) => ({
+        ...prev,
+        reportType: updatedDto.reportType || editType,
+        reportDescription: updatedDto.reportDescription || editDescription,
+      }));
+      setOpenEdit(false);
+    } catch (err) {
+      console.error("Error editing report:", err);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteReport(reportData.id);
+      setDeleted(true);
+      setOpenConfirmDelete(false);
+    } catch (err) {
+      console.error("Error deleting report:", err);
+    }
+  };
 
   return (
-    <Marker position={[marker.lat, marker.lng]} icon={iconUrl}>
-      <Popup minWidth={240}>
-        <Box sx={{ minWidth: 224, py: 0.5 }}>
+    <>
+      <Marker position={[reportData.lat, reportData.lng]} icon={iconUrl}>
+        <Popup minWidth={240}>
+          <Box sx={{ minWidth: 224, py: 0.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 0.5, color: pallette.primary }}>
+              {streetName ? `${streetName}${streetNum}` : "Ubicación seleccionada"}
+            </Typography>
+            
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+              Por: {reportData.usuarioName || "Vecino"}
+            </Typography>
 
-          {/* ── Description ── */}
-          <Typography
-            component="div"
-            variant="body2"
-            sx={{ mb: 1.5, lineHeight: 1.5, color: "rgba(0,0,0,0.87)" }}
-          >
-            {description || <em style={{ color: "#9e9e9e" }}>Sin descripción</em>}
-          </Typography>
+            {/* ── Description ── */}
+            <Typography
+              component="div"
+              variant="body2"
+              sx={{ mb: 1.5, lineHeight: 1.5, color: "rgba(0,0,0,0.87)" }}
+            >
+              {description || <em style={{ color: "#9e9e9e" }}>Sin descripción</em>}
+            </Typography>
 
-          <Divider sx={{ mb: 1.5 }} />
+            <Divider sx={{ mb: 1.5 }} />
 
-          {/* ── Star rating ── */}
-          <Box sx={{ mb: 1.5 }}>
-            <StarRating reportId={marker.id} isLoggedIn={isLoggedIn} />
+            {/* ── Star rating ── */}
+            <Box sx={{ mb: 1.5 }}>
+              <StarRating reportId={reportData.id} initialRating={reportData.averageRating} isLoggedIn={isLoggedIn} />
+            </Box>
+
+            <Divider sx={{ mb: 1.5 }} />
+
+            {/* ── Dual verification ── */}
+            <Box sx={{ mb: canManage ? 1.5 : 0 }}>
+              <VerificationButtons
+                reportId={reportData.id}
+                initialConfirmCount={reportData.verificationCount ?? 0}
+                initialDismissCount={reportData.dismissCount ?? 0}
+                isLoggedIn={isLoggedIn}
+                onDeactivated={() => setDeleted(true)}
+              />
+            </Box>
+
+            {/* ── Owner / Admin Management Options ── */}
+            {canManage && (
+              <>
+                <Divider sx={{ mb: 1 }} />
+                <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1 }}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<EditIcon sx={{ fontSize: "0.9rem" }} />}
+                    onClick={handleOpenEdit}
+                    sx={{
+                      flex: 1,
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: "12px",
+                      color: pallette.primary,
+                      borderColor: pallette.primary,
+                      "&:hover": { borderColor: pallette.primary, bgcolor: "rgba(18, 188, 142, 0.05)" }
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon sx={{ fontSize: "0.9rem" }} />}
+                    onClick={() => setOpenConfirmDelete(true)}
+                    sx={{
+                      flex: 1,
+                      textTransform: "none",
+                      fontSize: "0.75rem",
+                      borderRadius: "12px",
+                    }}
+                  >
+                    Eliminar
+                  </Button>
+                </Box>
+              </>
+            )}
+
           </Box>
+        </Popup>
+      </Marker>
 
-          <Divider sx={{ mb: 1.5 }} />
-
-          {/* ── Dual verification ── */}
-          <VerificationButtons
-            reportId={marker.id}
-            initialConfirmCount={marker.verificationCount ?? 0}
-            initialDismissCount={marker.dismissCount ?? 0}
-            isLoggedIn={isLoggedIn}
+      {/* ── EDIT DIALOG ── */}
+      <Dialog
+        open={openEdit}
+        onClose={() => setOpenEdit(false)}
+        PaperProps={{ sx: { borderRadius: "12px", p: 2, minWidth: "300px" } }}
+      >
+        <DialogTitle sx={{ p: 0, mb: 2 }}>Editar Incidente</DialogTitle>
+        <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Modifica la categoría o descripción del reporte.
+          </Typography>
+          
+          <CustomizeSelect
+            value={editType}
+            onChange={(e) => setEditType(e.target.value)}
+            label="Incidente"
+            sx={{ width: "100%" }}
           />
 
-        </Box>
-      </Popup>
-    </Marker>
+          <TextField
+            label="Descripción"
+            multiline
+            rows={3}
+            value={editDescription}
+            onChange={(e) => setEditDescription(e.target.value)}
+            fullWidth
+            variant="outlined"
+            placeholder="Describe lo ocurrido..."
+            InputProps={{ sx: { borderRadius: "12px" } }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1 }}>
+          <ButtonCancelBase text="Cancelar" mw="80px" onClick={() => setOpenEdit(false)} />
+          <ButtonAcceptBase text="Guardar" mw="80px" onClick={handleSaveEdit} />
+        </DialogActions>
+      </Dialog>
+
+      {/* ── CONFIRM DELETE DIALOG ── */}
+      <Dialog
+        open={openConfirmDelete}
+        onClose={() => setOpenConfirmDelete(false)}
+        PaperProps={{ sx: { borderRadius: "12px", p: 2 } }}
+      >
+        <DialogTitle sx={{ p: 0, mb: 1 }}>¿Eliminar reporte?</DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <DialogContentText>
+            Esta acción desactivará el reporte y no será visible en el mapa. ¿Deseas continuar?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1 }}>
+          <ButtonCancelBase text="Cancelar" mw="80px" onClick={() => setOpenConfirmDelete(false)} />
+          <ButtonAcceptBase text="Eliminar" mw="80px" sx={{ bgcolor: pallette.cancel, "&:hover": { bgcolor: "#c63f3f" } }} onClick={handleDelete} />
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

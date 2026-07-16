@@ -9,37 +9,40 @@ export function AuthProvider({ children }) {
     // true only while we wait for the backend to confirm the stored token
     const [isLoading, setIsLoading] = useState(!!localStorage.getItem("token"));
 
+    const validate = async () => {
+        if (!localStorage.getItem("token")) {
+            setIsLoading(false);
+            return;
+        }
+        try {
+            const data = await validateTokenService();
+            setUser(data ?? null);
+            setIsLoggedIn(true);
+        } catch (err) {
+            console.error("Token validation failed:", err);
+            localStorage.removeItem("token");
+            setIsLoggedIn(false);
+            setUser(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     useEffect(() => {
-        if (!localStorage.getItem("token")) return;
-
-        const validate = async () => {
-            try {
-                const data = await validateTokenService();
-                setUser(data?.user ?? null);
-                setIsLoggedIn(true);
-            } catch {
-                // 401 or network error: token is stale/invalid
-                localStorage.removeItem("token");
-                setIsLoggedIn(false);
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         validate();
     }, []);
 
     const login = async (data) => {
-        const response = await loginService(data);
-        console.log(response);
-        setUser(response.user);
+        await loginService(data); // Saves token
+        const userData = await validateTokenService(); // Fetches user data
+        setUser(userData ?? null);
         setIsLoggedIn(true);
     };
 
     const register = async (data) => {
-        const response = await registerService(data);
-        setUser(response.user);
+        await registerService(data); // Saves token
+        const userData = await validateTokenService(); // Fetches user data
+        setUser(userData ?? null);
         setIsLoggedIn(true);
     };
 
@@ -50,7 +53,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isLoggedIn, isLoading, login, register, logout, reloadUser: validate }}>
             {children}
         </AuthContext.Provider>
     );

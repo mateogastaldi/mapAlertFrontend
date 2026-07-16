@@ -26,7 +26,7 @@ export const reportRegister = async (params) => {
 };
 
 export const rateReport = async (id, rating) => {
-    const res = await axios.post(`${API}/${id}/calificar`, { rating }, getAuthHeader());
+    const res = await axios.post(`${API}/${id}/calificar`, { puntaje: rating, reporteId: id }, getAuthHeader());
     return res.data;
 };
 
@@ -37,6 +37,16 @@ export const verifyReport = async (id) => {
 
 export const dismissReport = async (id) => {
     const res = await axios.post(`${API}/${id}/desestimar`, {}, getAuthHeader());
+    return res.data;
+};
+
+export const editReport = async (id, params) => {
+    const res = await axios.put(`${API}/${id}`, params, getAuthHeader());
+    return res.data;
+};
+
+export const deleteReport = async (id) => {
+    const res = await axios.delete(`${API}/${id}`, getAuthHeader());
     return res.data;
 };
 
@@ -53,8 +63,16 @@ export const getReportsByBoundsAndFilters = async (bounds, filters) => {
     }
 
     if (filters.desdeFecha !== null && filters.desdeFecha !== undefined) {
-        const fecha = new Date(filters.desdeFecha).toISOString().slice(0, 19);
-        params.append("desdeFecha", fecha);
+        let dateVal;
+        if (typeof filters.desdeFecha.toDate === "function") {
+            dateVal = filters.desdeFecha.toDate();
+        } else {
+            dateVal = new Date(filters.desdeFecha);
+        }
+        if (!isNaN(dateVal.getTime())) {
+            const fecha = dateVal.toISOString().slice(0, 19);
+            params.append("desdeFecha", fecha);
+        }
     }
 
     if (filters.categorias !== null && filters.categorias?.length > 0) {

@@ -1,19 +1,16 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useMapEvents } from "react-leaflet/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import LogoutIcon from "@mui/icons-material/Logout";
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
 import CustomizeMarker from "../../components/CustomizeMarker";
-import { Fab, useMediaQuery, useTheme } from "@mui/material";
+import { Fab, useMediaQuery, useTheme, Paper, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import pallette from "../../styled-components/pallette.jsx";
 import ReportDialog from "../../components/ReportDialog.jsx";
-import { reverseGeocode } from "../../services/googleApi.js";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import {
   getReportsByBounds,
   reportRegister,
@@ -21,77 +18,46 @@ import {
 } from "../../services/reporteService.js";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import FilterDialog from "../../components/FilterDialog.jsx";
+import ButtonAcceptBase from "../../components/ButtonAcceptBase";
 
 const position = [-31.6353, -60.7031];
 
-const getAddressComponent = (address, type) => {
-  const component = address.address_components.find((a) =>
-    a.types[0].includes(type),
-  );
-  return component ? component.long_name : "";
-};
-
-const handleReverseGeocodeApi = async (e) => {
-  const result = await reverseGeocode(e.latlng.lat, e.latlng.lng);
-  return result;
-};
-
 function MapEventHandler({
-  activeOnClickRef,
+  isMarking,
+  setIsMarking,
+  setClickedLatLng,
+  setOpenDialog,
   setMarkers,
-  setIsActiveOnClick,
-  valueDialog,
-  setValueDialog,
   filters,
 }) {
+  const map = useMapEvents({
+    moveend: () => {
+      fetchMarkers();
+    },
+    load: () => {
+      fetchMarkers();
+    },
+    click: (e) => {
+      if (isMarking) {
+        setClickedLatLng(e.latlng);
+        setIsMarking(false);
+        setOpenDialog(true);
+      }
+    },
+  });
+
   const fetchMarkers = async () => {
     try {
-      const data = await getReportsByBoundsAndFilters(map.getBounds(),filters);
+      const data = await getReportsByBoundsAndFilters(map.getBounds(), filters);
       setMarkers(data);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const map = useMapEvents({
-    // Se dispara cuando termina de moverse o zoomear
-    moveend: () => {
-      fetchMarkers();
-    },
-    // Carga inicial
-    load: () => {
-      fetchMarkers();
-    },
-    click: async (e) => {
-      if (activeOnClickRef.current) {
-        const reverseGeocodeApi = await handleReverseGeocodeApi(e);
-        const newMarker = {
-          lat: e.latlng.lat,
-          lng: e.latlng.lng,
-          reportType: valueDialog.reportType,
-          reportDescription: valueDialog.reportDescription,
-          street: getAddressComponent(reverseGeocodeApi, "route"),
-          streetNumber: getAddressComponent(reverseGeocodeApi, "street_number"),
-          city: getAddressComponent(reverseGeocodeApi, "locality"),
-          state: getAddressComponent(
-            reverseGeocodeApi,
-            "administrative_area_level_1",
-          ),
-          country: getAddressComponent(reverseGeocodeApi, "country"),
-        };
-        try {
-          await reportRegister(newMarker);
-          setMarkers((markers) => [...markers, newMarker]);
-        } catch (err) {
-          console.log(err);
-        }
-
-        activeOnClickRef.current = false;
-        setIsActiveOnClick(false);
-        setValueDialog(null);
-      }
-    },
-  });
+  useEffect(() => {
+    fetchMarkers();
+  }, [filters]);
 
   return null;
 }
@@ -120,47 +86,52 @@ function Principal() {
 
   const [markers, setMarkers] = useState([]);
   const [openFilter, setOpenFilter] = useState(false);
-  const [isActiveOnClick, setIsActiveOnClick] = useState(false);
+  const [isMarking, setIsMarking] = useState(false);
+  const [clickedLatLng, setClickedLatLng] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [valueDialog, setValueDialog] = useState(null);
   const [filtros, setFiltros] = useState({
     soloMios: false,
     desdeFecha: null,
     categorias: []
-  })
-  const isActiveOnClickRef = useRef(false);
+  });
+
+  // Custom alert states
+  const [openAlertDialog, setOpenAlertDialog] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
+
+  const showAlert = (msg) => {
+    setAlertMessage(msg);
+    setOpenAlertDialog(true);
+  };
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const handleOpenDialog = () => setOpenDialog(true);
+  const handleOpenDialog = () => {
+    setIsMarking(true);
+  };
 
-  const handleCloseDialog = async (e) => {
+  const handleCloseDialog = async (reportData) => {
     setOpenDialog(false);
-    if (!e) return;
+    if (!reportData) return;
 
-    if (!e.needOnClick) {
-      const { needOnClick, ...reporteDTO } = e;
-      try {
-        await reportRegister(reporteDTO);
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      setValueDialog(e);
-      setIsActiveOnClick(true);
-      isActiveOnClickRef.current = true;
+    try {
+      const registered = await reportRegister(reportData);
+      setMarkers((prev) => [...prev, registered]);
+      showAlert("Reporte registrado con éxito");
+    } catch (err) {
+      console.error(err);
+      showAlert("Error al registrar el reporte");
     }
   };
 
   const handleCloseFilter = (filtrosDialog) => {
     setOpenFilter(false);
     if (!filtrosDialog) return;
-    console.log(filtrosDialog); 
     setFiltros(filtrosDialog);
-
   };
 
-  const { isLoggedIn, isLoading, user, logout } = useAuth();
+  const { isLoggedIn, isLoading } = useAuth();
 
   const fabStyle = {
     zIndex: 1000,
@@ -181,6 +152,29 @@ function Principal() {
 
   return (
     <Layout>
+      {isMarking && (
+        <Paper
+          elevation={4}
+          sx={{
+            position: "absolute",
+            top: "85px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            bgcolor: pallette.primary,
+            color: "white",
+            px: 3,
+            py: 1.5,
+            borderRadius: "20px",
+            fontWeight: "bold",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+            pointerEvents: "none"
+          }}
+        >
+          Haga clic en el mapa para ubicar el incidente
+        </Paper>
+      )}
+
       <MapContainer center={position} zoom={14} scrollWheelZoom={true}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -191,42 +185,32 @@ function Principal() {
           <CustomizeMarker key={marker.id ?? index} marker={marker} />
         ))}
 
-        {/* Reemplaza OnClickMap */}
         <MapEventHandler
-          activeOnClickRef={isActiveOnClickRef}
+          isMarking={isMarking}
+          setIsMarking={setIsMarking}
+          setClickedLatLng={setClickedLatLng}
+          setOpenDialog={setOpenDialog}
           setMarkers={setMarkers}
-          setIsActiveOnClick={setIsActiveOnClick}
-          valueDialog={valueDialog}
-          setValueDialog={setValueDialog}
           filters={filtros}
         />
 
-        {!isLoading && isLoggedIn ? (
+        {/* Action Buttons */}
+        {!isLoading && (
           <>
-            <Fab
-              size={isMobile ? "small" : "medium"}
-              onClick={logout}
-              sx={{
-                ...fabStyle,
-                position: "absolute",
-                top: isMobile ? 10 : 20,
-                right: isMobile ? 10 : 20,
-              }}
-            >
-              <LogoutIcon fontSize={isMobile ? "small" : "medium"} />
-            </Fab>
-            <Fab
-              size={isMobile ? "small" : "medium"}
-              onClick={handleOpenDialog}
-              sx={{
-                ...fabStyle,
-                position: "absolute",
-                bottom: isMobile ? 20 : 40,
-                right: isMobile ? 60 : 90,
-              }}
-            >
-              <AddIcon fontSize={isMobile ? "small" : "medium"} />
-            </Fab>
+            {isLoggedIn && (
+              <Fab
+                size={isMobile ? "small" : "medium"}
+                onClick={handleOpenDialog}
+                sx={{
+                  ...fabStyle,
+                  position: "absolute",
+                  bottom: isMobile ? 20 : 40,
+                  right: isMobile ? 60 : 90,
+                }}
+              >
+                <AddIcon fontSize={isMobile ? "small" : "medium"} />
+              </Fab>
+            )}
             <Fab
               onClick={() => setOpenFilter(true)}
               size={isMobile ? "small" : "medium"}
@@ -239,58 +223,34 @@ function Principal() {
             >
               <FilterAltOutlinedIcon fontSize={isMobile ? "small" : "medium"} />
             </Fab>
-            <FilterDialog open={openFilter} onClose={handleCloseFilter} />
-            <ReportDialog open={openDialog} onClose={handleCloseDialog} />
           </>
-        ) : !isLoading ? (
-          <>
-            <Fab
-              onClick={() => setOpenFilter(true)}
-              size={isMobile ? "small" : "medium"}
-              sx={{
-                ...fabStyle,
-                position: "absolute",
-                bottom: isMobile ? 20 : 40,
-                right: isMobile ? 10 : 20,
-              }}
-            >
-              <FilterAltOutlinedIcon fontSize={isMobile ? "small" : "medium"} />
-            </Fab>
-            <FilterDialog open={openFilter} onClose={handleCloseFilter} />
+        )}
 
-            <Fab
-              variant="extended"
-              size={isMobile ? "small" : "medium"}
-              onClick={() => navigate("/login")}
-              sx={{
-                ...fabStyle,
-                position: "absolute",
-                top: isMobile ? 10 : 20,
-                right: isMobile ? 110 : 200,
-                fontSize: isMobile ? "0.7rem" : "0.875rem",
-              }}
-            >
-              {isMobile ? "Ingresar" : "Iniciar Sesión"}
-            </Fab>
+        <FilterDialog open={openFilter} onClose={handleCloseFilter} />
+        
+        <ReportDialog
+          open={openDialog}
+          onClose={handleCloseDialog}
+          lat={clickedLatLng?.lat}
+          lng={clickedLatLng?.lng}
+        />
 
-            <Fab
-              variant="extended"
-              size={isMobile ? "small" : "medium"}
-              onClick={() => navigate("/register")}
-              sx={{
-                ...fabStyle,
-                position: "absolute",
-                top: isMobile ? 10 : 20,
-                right: isMobile ? 10 : 20,
-                fontSize: isMobile ? "0.7rem" : "0.875rem",
-              }}
-            >
-              {isMobile ? "Registro" : "Crear Usuario"}
-            </Fab>
-          </>
-        ) : null}
-
-        {/*<OnClickMap activeOnClick={isActiveOnClick} setMarkers={setMarkers} setIsActiveOnClick={setIsActiveOnClick} valueDialog={valueDialog} setValueDialog={setValueDialog} />*/}
+        {/* Premium Alert Notification Dialog */}
+        <Dialog
+          open={openAlertDialog}
+          onClose={() => setOpenAlertDialog(false)}
+          PaperProps={{ sx: { borderRadius: "12px", p: 1 } }}
+        >
+          <DialogTitle sx={{ pb: 1 }}>Atención</DialogTitle>
+          <DialogContent>
+            <DialogContentText color="text.primary">
+              {alertMessage}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <ButtonAcceptBase text="Aceptar" mw="80px" onClick={() => setOpenAlertDialog(false)} />
+          </DialogActions>
+        </Dialog>
       </MapContainer>
     </Layout>
   );

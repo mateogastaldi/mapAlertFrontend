@@ -1,4 +1,4 @@
-import { Container, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from "@mui/material";
+import { Container, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TextInputBase from "../../components/TextInputBase";
@@ -7,7 +7,7 @@ import PasswordInputBase from "../../components/PassworInputBase";
 import ButtonAcceptBase from "../../components/ButtonAcceptBase";
 import ButtonCancelBase from "../../components/ButtonCancelBase";
 import { useAuth } from "../../hooks/useAuth";
-
+import pallette from "../../styled-components/pallette";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -22,14 +22,13 @@ function Login() {
 
     const [form, setForm] = useState({
         username: "",
-        password: ""
+        password: "",
     });
 
     const handleSubmit = async () => {
         try {
             await login(form);
-            window.location.href = "/";
-
+            navigate("/");
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.message || "Error al iniciar sesion");
@@ -71,7 +70,6 @@ function Login() {
                     }}
                 />
 
-                {/* 🔥 AGREGADO: usuario */}
                 <TextInputBase
                     nombre="Usuario"
                     mt={marginTop}
@@ -117,20 +115,28 @@ function Login() {
 
                     />
                 </Box>
-                <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)}>
+                <Dialog
+                    open={openCancelDialog}
+                    onClose={() => setOpenCancelDialog(false)}
+                    PaperProps={{ sx: { borderRadius: "12px", p: 1 } }}
+                >
                     <DialogTitle sx={{ fontWeight: 'bold' }}>Cancelar Inicio de sesion</DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             ¿Está seguro que quiere cancelar?
                         </DialogContentText>
                     </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setOpenCancelDialog(false)} color="primary">
-                            No
-                        </Button>
-                        <Button onClick={() => navigate('/')} color="error" autoFocus>
-                            Sí
-                        </Button>
+                    <DialogActions sx={{ p: 2, gap: 1 }}>
+                        <ButtonCancelBase
+                            text="No"
+                            onClick={() => setOpenCancelDialog(false)}
+                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                        />
+                        <ButtonAcceptBase
+                            text="Sí"
+                            onClick={() => navigate('/')}
+                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                        />
                     </DialogActions>
                 </Dialog>
             </Box>
