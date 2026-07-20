@@ -181,7 +181,7 @@ function ResponsiveAppBar() {
                     <MenuItem onClick={() => handleNavigate("/profile")}>
                       <Typography sx={{ textAlign: "center", fontSize: "0.9rem" }}>Mi Perfil</Typography>
                     </MenuItem>
-                    {(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN") && (
+                    {user?.role === "ADMIN" && (
                       <MenuItem onClick={() => handleNavigate("/admin")}>
                         <Typography sx={{ textAlign: "center", fontSize: "0.9rem", color: pallette.primary, fontWeight: 600 }}>
                           Panel Admin

@@ -35,6 +35,17 @@ export const adminUpdateUser = async (id, params, rol) => {
   return res.data;
 };
 
+export const adminChangeRole = async (id, rol) => {
+  const res = await axios.put(`${ADMIN_API}/${id}/rol?rol=${rol}`, {}, getAuthHeader());
+  return res.data;
+};
+
+export const adminToggleStatus = async (id, activo) => {
+  const params = activo !== undefined ? `?activo=${activo}` : "";
+  const res = await axios.put(`${ADMIN_API}/${id}/estado${params}`, {}, getAuthHeader());
+  return res.data;
+};
+
 export const adminDeleteUser = async (id) => {
   const res = await axios.delete(`${ADMIN_API}/${id}`, getAuthHeader());
   return res.data;

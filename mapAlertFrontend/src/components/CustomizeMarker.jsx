@@ -256,7 +256,7 @@ export default function CustomizeMarker({ marker }) {
 
   // Check if owner or admin
   const isOwner = isLoggedIn && user && reportData.usuarioId === user.id;
-  const isAdmin = isLoggedIn && user && (user.role === "ADMIN" || user.role === "SUPER_ADMIN");
+  const isAdmin = isLoggedIn && user && user.role === "ADMIN";
   const canManage = isOwner || isAdmin;
 
   const handleOpenEdit = () => {
