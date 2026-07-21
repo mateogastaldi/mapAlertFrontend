@@ -1,13 +1,13 @@
 import { Container, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TextInputBase from "../../components/TextInputBase";
-import logo from "../../assets/logo png.png";
-import PasswordInputBase from "../../components/PassworInputBase";
-import ButtonAcceptBase from "../../components/ButtonAcceptBase";
-import ButtonCancelBase from "../../components/ButtonCancelBase";
-import { useAuth } from "../../hooks/useAuth";
-import pallette from "../../styled-components/pallette";
+import TextInputBase from "../components/TextInputBase";
+import logo from "../assets/logo.png";
+import PasswordInputBase from "../components/PassworInputBase";
+import ButtonAcceptBase from "../components/ButtonAcceptBase";
+import ButtonCancelBase from "../components/ButtonCancelBase";
+import { useAuth } from "../hooks/useAuth";
+import { getErrorMessage } from "../utilities/errorMessage";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -40,8 +40,7 @@ function Login() {
             navigate("/");
         } catch (err) {
             console.error(err);
-            const msg = err.response?.data?.message || err.response?.data?.detail;
-            setErrorMessage(msg || "Usuario o contraseña incorrectos.");
+            setErrorMessage(getErrorMessage(err, "Usuario o contraseña incorrectos."));
             setOpenRegisterSuggestDialog(true);
         }
     };
@@ -144,12 +143,12 @@ function Login() {
                         <ButtonCancelBase
                             text="No"
                             onClick={() => setOpenCancelDialog(false)}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                         <ButtonAcceptBase
                             text="Sí"
                             onClick={() => navigate('/')}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                     </DialogActions>
                 </Dialog>
@@ -171,7 +170,7 @@ function Login() {
                             text="Aceptar"
                             mw="80px"
                             onClick={() => setOpenIncompleteDialog(false)}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                     </DialogActions>
                 </Dialog>
@@ -195,12 +194,12 @@ function Login() {
                         <ButtonCancelBase
                             text="Reintentar"
                             onClick={() => setOpenRegisterSuggestDialog(false)}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                         <ButtonAcceptBase
                             text="Registrarse"
                             onClick={() => navigate('/register')}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                     </DialogActions>
                 </Dialog>

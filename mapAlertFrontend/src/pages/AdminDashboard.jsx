@@ -5,16 +5,18 @@ import {
     FormControl, InputLabel, Select, MenuItem, Tooltip
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Layout from "../../components/Layout";
-import ButtonAcceptBase from "../../components/ButtonAcceptBase";
-import ButtonCancelBase from "../../components/ButtonCancelBase";
-import TextInputBase from "../../components/TextInputBase";
-import PasswordInputBase from "../../components/PassworInputBase";
-import { useAuth } from "../../hooks/useAuth";
+import Layout from "../components/Layout";
+import ButtonAcceptBase from "../components/ButtonAcceptBase";
+import ButtonCancelBase from "../components/ButtonCancelBase";
+import TextInputBase from "../components/TextInputBase";
+import PasswordInputBase from "../components/PassworInputBase";
+import { useAuth } from "../hooks/useAuth";
 import {
-    adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser, adminChangeRole, adminToggleStatus
-} from "../../services/usuarioService";
-import pallette from "../../styled-components/pallette";
+    adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser, adminChangeRole
+} from "../services/usuarioService";
+import { adaptUsuario } from "../adapters/usuarioAdapter";
+import { isValidPassword } from "../utilities/validators";
+import { getErrorMessage } from "../utilities/errorMessage";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -64,7 +66,9 @@ function AdminDashboard() {
     const fetchUsers = async () => {
         try {
             const data = await adminListUsers();
-            setUsersList(data);
+            console.log("Raw fetched users:", data);
+            setUsersList(data.map(adaptUsuario));
+            console.log("Fetched users:", data.map(adaptUsuario));
         } catch (err) {
             console.error("Error fetching users:", err);
         }
@@ -92,19 +96,19 @@ function AdminDashboard() {
     };
 
     const handleOpenEdit = (targetUser) => {
-        if (!targetUser.activo) {
+        if (!targetUser.active) {
             showAlert("No se puede editar una cuenta dada de baja.");
             return;
         }
         setIsEditMode(true);
         setSelectedUserId(targetUser.id);
         setForm({
-            username: targetUser.usuario,
-            firstName: targetUser.nombres,
-            lastName: targetUser.apellidos,
+            username: targetUser.username,
+            firstName: targetUser.firstName,
+            lastName: targetUser.lastName,
             email: targetUser.email,
             password: "******", // Placeholder
-            role: targetUser.rol,
+            role: targetUser.role,
         });
         setOpenDialog(true);
     };
@@ -116,13 +120,9 @@ function AdminDashboard() {
         }
 
         // Validate password for new user or if modified
-        if (!isEditMode || (form.password && form.password !== "******")) {
-            const hasUppercase = /[A-Z]/.test(form.password);
-            const isMinLength = form.password.length >= 8;
-            if (!isMinLength || !hasUppercase) {
-                showAlert("La contraseña debe tener al menos 8 caracteres y contener al menos una letra mayúscula");
-                return;
-            }
+        if ((!isEditMode || (form.password && form.password !== "******")) && !isValidPassword(form.password)) {
+            showAlert("La contraseña debe tener al menos 8 caracteres y contener al menos una letra mayúscula");
+            return;
         }
 
         try {
@@ -141,13 +141,12 @@ function AdminDashboard() {
             }
         } catch (err) {
             console.error(err);
-            const serverMsg = err.response?.data?.message || err.response?.data?.reason || (typeof err.response?.data === 'string' ? err.response.data : null);
-            showAlert(serverMsg || "El usuario y/o email ya se encuentran registrados.");
+            showAlert(getErrorMessage(err, "El usuario y/o email ya se encuentran registrados."));
         }
     };
 
     const handleQuickRoleChange = async (targetUser, newRole) => {
-        if (!targetUser.activo) {
+        if (!targetUser.active) {
             showAlert("No se puede modificar el rol de una cuenta dada de baja.");
             return;
         }
@@ -160,13 +159,12 @@ function AdminDashboard() {
             fetchUsers();
         } catch (err) {
             console.error("Error al cambiar rol:", err);
-            const serverMsg = err.response?.data?.message || err.response?.data?.reason;
-            showAlert(serverMsg || "Error al modificar el rol del usuario");
+            showAlert(getErrorMessage(err, "Error al modificar el rol del usuario"));
         }
     };
 
     const handleDeleteClick = (targetUser) => {
-        if (!targetUser.activo) {
+        if (!targetUser.active) {
             showAlert("La cuenta ya se encuentra eliminada.");
             return;
         }
@@ -204,25 +202,24 @@ function AdminDashboard() {
                         sx={{
                             textTransform: "none",
                             borderRadius: "12px",
-                            color: pallette.primary,
-                            borderColor: pallette.primary,
-                            "&:hover": { borderColor: pallette.primary, bgcolor: "rgba(1, 150, 75, 0.05)" }
+                            color: "primary.main",
+                            borderColor: "primary.main",
+                            "&:hover": { borderColor: "primary.main", bgcolor: "rgba(1, 150, 75, 0.05)" }
                         }}
                     >
                         Volver al Mapa
                     </Button>
-                    <Typography variant="h5" sx={{ fontWeight: "bold", color: pallette.primary }}>
+                    <Typography variant="h5" sx={{ fontWeight: "bold", color: "primary.main" }}>
                         Control de Usuarios - Panel de Administración
                     </Typography>
                     <Button
                         variant="contained"
+                        color="primary"
                         startIcon={<AddIcon />}
                         onClick={handleOpenCreate}
                         sx={{
                             textTransform: "none",
                             borderRadius: "12px",
-                            bgcolor: pallette.primary,
-                            "&:hover": { bgcolor: "#01783c" }
                         }}
                     >
                         Agregar Usuario
@@ -250,18 +247,18 @@ function AdminDashboard() {
                                     hover
                                     sx={{
                                         "&:last-child td, &:last-child th": { border: 0 },
-                                        bgcolor: !row.activo ? "rgba(0, 0, 0, 0.02)" : "inherit",
-                                        opacity: !row.activo ? 0.75 : 1,
+                                        bgcolor: !row.active ? "rgba(0, 0, 0, 0.02)" : "inherit",
+                                        opacity: !row.active ? 0.75 : 1,
                                     }}
                                 >
                                     <TableCell>{row.id}</TableCell>
-                                    <TableCell sx={{ fontWeight: 600 }}>{row.usuario}</TableCell>
+                                    <TableCell sx={{ fontWeight: 600 }}>{row.username}</TableCell>
                                     <TableCell>{row.email}</TableCell>
-                                    <TableCell>{`${row.nombres} ${row.apellidos}`}</TableCell>
+                                    <TableCell>{`${row.firstName} ${row.lastName}`}</TableCell>
                                     <TableCell>
-                                        <FormControl size="small" variant="standard" sx={{ minWidth: 110 }} disabled={!row.activo}>
+                                        <FormControl size="small" variant="standard" sx={{ minWidth: 110 }} disabled={!row.active}>
                                             <Select
-                                                value={row.rol}
+                                                value={row.role}
                                                 onChange={(e) => handleQuickRoleChange(row, e.target.value)}
                                                 disableUnderline
                                                 sx={{
@@ -270,8 +267,8 @@ function AdminDashboard() {
                                                     borderRadius: "12px",
                                                     px: 1,
                                                     py: 0.3,
-                                                    bgcolor: row.rol === "ADMIN" ? "rgba(1, 150, 75, 0.15)" : "rgba(0, 0, 0, 0.05)",
-                                                    color: row.rol === "ADMIN" ? pallette.primary : "text.secondary",
+                                                    bgcolor: row.role === "ADMIN" ? "rgba(1, 150, 75, 0.15)" : "rgba(0, 0, 0, 0.05)",
+                                                    color: row.role === "ADMIN" ? "primary.main" : "text.secondary",
                                                 }}
                                             >
                                                 <MenuItem value="USER">USER</MenuItem>
@@ -280,16 +277,16 @@ function AdminDashboard() {
                                         </FormControl>
                                     </TableCell>
                                     <TableCell>
-                                        <Tooltip title={row.activo ? "Haz clic para dar de baja" : "Cuenta eliminada (permanente)"}>
+                                        <Tooltip title={row.active ? "Haz clic para dar de baja" : "Cuenta eliminada (permanente)"}>
                                             <Chip
-                                                label={row.activo ? "Activo" : "Eliminada"}
-                                                color={row.activo ? "success" : "error"}
-                                                variant={row.activo ? "outlined" : "filled"}
+                                                label={row.active ? "Activo" : "Eliminada"}
+                                                color={row.active ? "success" : "error"}
+                                                variant={row.active ? "outlined" : "filled"}
                                                 size="small"
-                                                onClick={() => row.activo && handleDeleteClick(row)}
+                                                onClick={() => row.active && handleDeleteClick(row)}
                                                 sx={{
                                                     fontWeight: "bold",
-                                                    cursor: row.activo ? "pointer" : "default"
+                                                    cursor: row.active ? "pointer" : "default"
                                                 }}
                                             />
                                         </Tooltip>
@@ -301,13 +298,13 @@ function AdminDashboard() {
                                                 size="small"
                                                 startIcon={<EditIcon />}
                                                 onClick={() => handleOpenEdit(row)}
-                                                disabled={!row.activo}
+                                                disabled={!row.active}
                                                 sx={{
                                                     textTransform: "none",
                                                     borderRadius: "10px",
-                                                    color: pallette.primary,
-                                                    borderColor: pallette.primary,
-                                                    "&:hover": { borderColor: pallette.primary, bgcolor: "rgba(1, 150, 75, 0.08)" }
+                                                    color: "primary.main",
+                                                    borderColor: "primary.main",
+                                                    "&:hover": { borderColor: "primary.main", bgcolor: "rgba(1, 150, 75, 0.08)" }
                                                 }}
                                             >
                                                 Editar
@@ -319,7 +316,7 @@ function AdminDashboard() {
                                                 size="small"
                                                 startIcon={<DeleteIcon />}
                                                 onClick={() => handleDeleteClick(row)}
-                                                disabled={!row.activo}
+                                                disabled={!row.active}
                                                 sx={{
                                                     textTransform: "none",
                                                     borderRadius: "10px",
@@ -342,7 +339,7 @@ function AdminDashboard() {
                 onClose={() => setOpenDialog(false)}
                 PaperProps={{ sx: { borderRadius: "12px", p: 2, minWidth: "360px" } }}
             >
-                <DialogTitle sx={{ p: 0, mb: 2, fontWeight: "bold", color: pallette.primary }}>
+                <DialogTitle sx={{ p: 0, mb: 2, fontWeight: "bold", color: "primary.main" }}>
                     {isEditMode ? "Modificar Datos de Usuario" : "Agregar Nuevo Usuario"}
                 </DialogTitle>
                 <DialogContent sx={{ p: 0, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -416,7 +413,7 @@ function AdminDashboard() {
                 </DialogContent>
                 <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1 }}>
                     <ButtonCancelBase text="Cancelar" onClick={() => setOpenDeleteConfirm(false)} />
-                    <ButtonAcceptBase text="Eliminar" sx={{ bgcolor: pallette.cancel, "&:hover": { bgcolor: "#c63f3f" } }} onClick={handleConfirmDeleteUser} />
+                    <ButtonAcceptBase text="Eliminar" sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }} onClick={handleConfirmDeleteUser} />
                 </DialogActions>
             </Dialog>
 

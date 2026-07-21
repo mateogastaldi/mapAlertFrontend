@@ -10,7 +10,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import pallette from "../styled-components/pallette";
+import { alpha, useTheme } from "@mui/material/styles";
 import { useAuth } from "../hooks/useAuth";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -25,6 +25,7 @@ const categorias = [
 
 function FilterDialog({ open, onClose }) {
   const { isLoggedIn } = useAuth();
+  const theme = useTheme();
 
   const [soloMios, setSoloMios] = React.useState(false);
   const [desdeFecha, setDesdeFecha] = React.useState(null);
@@ -54,12 +55,12 @@ function FilterDialog({ open, onClose }) {
 
   const buttonStyle = {
     borderRadius: "12px",
-    borderColor: pallette.primary,
-    color: pallette.primary,
+    borderColor: "primary.main",
+    color: "primary.main",
     "&:hover": {
-      borderColor: pallette.primary,
+      borderColor: "primary.main",
       bgcolor: "transparent",
-      color: pallette.primary,
+      color: "primary.main",
     },
   };
 
@@ -114,8 +115,8 @@ function FilterDialog({ open, onClose }) {
                     checked={soloMios}
                     onChange={(e) => setSoloMios(e.target.checked)}
                     sx={{
-                      color: pallette.primary,
-                      "&.Mui-checked": { color: pallette.primary },
+                      color: "primary.main",
+                      "&.Mui-checked": { color: "primary.main" },
                     }}
                   />
                 }
@@ -164,17 +165,15 @@ function FilterDialog({ open, onClose }) {
                     onClick={() => handleToggleCategoria(cat.value)}
                     sx={{
                       borderRadius: "12px",
-                      borderColor: seleccionada
-                        ? pallette.primary
-                        : "rgba(0,0,0,0.23)",
-                      color: seleccionada ? pallette.primary : "black",
+                      borderColor: seleccionada ? "primary.main" : "divider",
+                      color: seleccionada ? "primary.main" : "text.primary",
                       bgcolor: seleccionada
-                        ? `${pallette.primary}15`
+                        ? alpha(theme.palette.primary.main, 0.08)
                         : "transparent",
                       "&:hover": {
-                        borderColor: pallette.primary,
-                        bgcolor: `${pallette.primary}10`,
-                        color: pallette.primary,
+                        borderColor: "primary.main",
+                        bgcolor: alpha(theme.palette.primary.main, 0.06),
+                        color: "primary.main",
                       },
                     }}
                   >
@@ -196,13 +195,9 @@ function FilterDialog({ open, onClose }) {
             </Button>
             <Button
               variant="contained"
+              color="primary"
               onClick={handleAceptar}
-              sx={{
-                bgcolor: pallette.primary,
-                color: pallette.secondary,
-                borderRadius: "12px",
-                "&:hover": { bgcolor: pallette.primary },
-              }}
+              sx={{ borderRadius: "12px" }}
             >
               Aplicar
             </Button>

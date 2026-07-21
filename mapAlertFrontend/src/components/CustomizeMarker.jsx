@@ -20,7 +20,6 @@ import { rateReport, verifyReport, dismissReport, editReport, deleteReport } fro
 import ButtonAcceptBase from "./ButtonAcceptBase";
 import ButtonCancelBase from "./ButtonCancelBase";
 import CustomizeSelect from "./CustomizeSelect";
-import pallette from "../styled-components/pallette";
 
 const ICON_MAP = {
   CALLE_SIN_LUZ: powerOutage,
@@ -304,7 +303,7 @@ export default function CustomizeMarker({ marker }) {
       <Marker position={[reportData.lat, reportData.lng]} icon={iconUrl}>
         <Popup minWidth={240}>
           <Box sx={{ minWidth: 224, py: 0.5 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 0.5, color: pallette.primary }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: "bold", mb: 0.5, color: "primary.main" }}>
               {streetName ? `${streetName}${streetNum}` : "Ubicación seleccionada"}
             </Typography>
             
@@ -356,9 +355,9 @@ export default function CustomizeMarker({ marker }) {
                       textTransform: "none",
                       fontSize: "0.75rem",
                       borderRadius: "12px",
-                      color: pallette.primary,
-                      borderColor: pallette.primary,
-                      "&:hover": { borderColor: pallette.primary, bgcolor: "rgba(18, 188, 142, 0.05)" }
+                      color: "primary.main",
+                      borderColor: "primary.main",
+                      "&:hover": { borderColor: "primary.main", bgcolor: "rgba(1, 150, 75, 0.05)" }
                     }}
                   >
                     Editar
@@ -437,7 +436,7 @@ export default function CustomizeMarker({ marker }) {
         </DialogContent>
         <DialogActions sx={{ p: 0, mt: 3, display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <ButtonCancelBase text="Cancelar" mw="80px" onClick={() => setOpenConfirmDelete(false)} />
-          <ButtonAcceptBase text="Eliminar" mw="80px" sx={{ bgcolor: pallette.cancel, "&:hover": { bgcolor: "#c63f3f" } }} onClick={handleDelete} />
+          <ButtonAcceptBase text="Eliminar" mw="80px" sx={{ bgcolor: "error.main", "&:hover": { bgcolor: "error.dark" } }} onClick={handleDelete} />
         </DialogActions>
       </Dialog>
     </>

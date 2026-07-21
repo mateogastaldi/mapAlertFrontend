@@ -9,9 +9,10 @@ import CustomizeSelect from "./CustomizeSelect";
 import CloseIcon from "@mui/icons-material/Close";
 import ButtonAcceptBase from "./ButtonAcceptBase";
 import ButtonCancelBase from "./ButtonCancelBase";
-import pallette from "../styled-components/pallette";
+import { reverseGeocode, loadGoogleMapsScript } from "../services/googleApi";
+import { adaptGoogleAddressComponents } from "../adapters/googleAddressAdapter";
 
-function ReportDialog({ open, onClose, lat, lng }) {
+function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
   const [valueReport, setValueReport] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [street, setStreet] = React.useState("");
@@ -20,6 +21,9 @@ function ReportDialog({ open, onClose, lat, lng }) {
   const [state, setState] = React.useState("");
   const [country, setCountry] = React.useState("Argentina");
   const [errorText, setErrorText] = React.useState("");
+  const [resolvedLat, setResolvedLat] = React.useState(lat);
+  const [resolvedLng, setResolvedLng] = React.useState(lng);
+  const [isLocating, setIsLocating] = React.useState(false);
 
   const handleClose = () => {
     setErrorText("");
@@ -27,15 +31,20 @@ function ReportDialog({ open, onClose, lat, lng }) {
   };
 
   const handleAccept = () => {
+    if (resolvedLat == null || resolvedLng == null) {
+      setErrorText("Selecciona una dirección de la lista de sugerencias para ubicar el incidente.");
+      return;
+    }
+
     if (!valueReport || !street || !city || !state || !country) {
       setErrorText("Por favor complete los campos obligatorios (*)");
       return;
     }
-    
+
     setErrorText("");
     onClose({
-      lat,
-      lng,
+      lat: resolvedLat,
+      lng: resolvedLng,
       reportType: valueReport,
       reportDescription: description,
       street,
@@ -46,18 +55,78 @@ function ReportDialog({ open, onClose, lat, lng }) {
     });
   };
 
-  React.useEffect(() => {
-    if (open) {
-      setValueReport("");
-      setDescription("");
-      setStreet("");
-      setStreetNumber("");
-      setCity("");
-      setState("");
-      setCountry("Argentina");
-      setErrorText("");
+  const handlePlaceSelected = (place) => {
+    if (!place?.geometry?.location) {
+      setErrorText("Selecciona una dirección de la lista de sugerencias.");
+      return;
     }
-  }, [open]);
+    const adapted = adaptGoogleAddressComponents(place.address_components);
+    setStreet(adapted.street);
+    setStreetNumber(adapted.streetNumber);
+    setCity(adapted.city);
+    setState(adapted.state);
+    setCountry(adapted.country || "Argentina");
+    setResolvedLat(place.geometry.location.lat());
+    setResolvedLng(place.geometry.location.lng());
+    setErrorText("");
+  };
+
+  // A state-backed callback ref (rather than a plain useRef) guarantees this
+  // effect re-runs exactly when the <input> actually mounts, regardless of
+  // when MUI's Dialog/Modal commits its children.
+  const [addressInputEl, setAddressInputEl] = React.useState(null);
+
+  React.useEffect(() => {
+    if (mode !== "search" || !addressInputEl) return;
+
+    let autocomplete;
+    let listener;
+
+    loadGoogleMapsScript()
+      .then(() => {
+        autocomplete = new window.google.maps.places.Autocomplete(addressInputEl, {
+          types: ["address"],
+          componentRestrictions: { country: "ar" },
+          fields: ["address_components", "geometry.location"],
+        });
+        listener = autocomplete.addListener("place_changed", () => {
+          handlePlaceSelected(autocomplete.getPlace());
+        });
+      })
+      .catch((err) => console.error("No se pudo cargar el autocompletado de direcciones:", err));
+
+    return () => listener?.remove();
+  }, [mode, addressInputEl]);
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    setValueReport("");
+    setDescription("");
+    setStreet("");
+    setStreetNumber("");
+    setCity("");
+    setState("");
+    setCountry("Argentina");
+    setErrorText("");
+    setResolvedLat(lat);
+    setResolvedLng(lng);
+
+    if (mode === "map" && lat != null && lng != null) {
+      setIsLocating(true);
+      reverseGeocode(lat, lng)
+        .then((result) => {
+          const adapted = adaptGoogleAddressComponents(result?.address_components);
+          setStreet(adapted.street);
+          setStreetNumber(adapted.streetNumber);
+          setCity(adapted.city);
+          setState(adapted.state);
+          setCountry(adapted.country || "Argentina");
+        })
+        .catch((err) => console.error("No se pudo geocodificar la ubicación:", err))
+        .finally(() => setIsLocating(false));
+    }
+  }, [open, lat, lng, mode]);
 
   return (
     <Dialog
@@ -79,14 +148,16 @@ function ReportDialog({ open, onClose, lat, lng }) {
           mb: 1.5,
         }}
       >
-        <DialogTitle sx={{ p: 0, fontWeight: "bold", color: pallette.primary }}>
+        <DialogTitle sx={{ p: 0, fontWeight: "bold", color: "primary.main" }}>
           Registrar Incidente
         </DialogTitle>
         <CloseIcon onClick={handleClose} sx={{ cursor: "pointer", color: "text.secondary" }} />
       </Box>
 
       <Typography color="text.secondary" sx={{ mb: 1.5 }}>
-        Completa los datos de la dirección e incidente para guardarlo.
+        {mode === "search"
+          ? "Buscá la dirección donde ocurrió el incidente."
+          : "Completa los datos del incidente para guardarlo."}
       </Typography>
 
       <Divider />
@@ -95,6 +166,23 @@ function ReportDialog({ open, onClose, lat, lng }) {
         {errorText && (
           <Typography color="error" sx={{ fontWeight: 500, fontSize: "0.85rem" }}>
             {errorText}
+          </Typography>
+        )}
+
+        {mode === "search" && (
+          <TextField
+            label="Buscar dirección *"
+            placeholder="Ej: Llerena 3360"
+            inputRef={setAddressInputEl}
+            size="small"
+            fullWidth
+            InputProps={{ sx: { borderRadius: "12px" } }}
+          />
+        )}
+
+        {mode === "map" && isLocating && (
+          <Typography variant="caption" color="text.secondary">
+            Buscando dirección…
           </Typography>
         )}
 

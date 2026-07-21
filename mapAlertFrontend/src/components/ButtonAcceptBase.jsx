@@ -1,6 +1,5 @@
 import React from "react";
 import { Button } from "@mui/material";
-import pallette from "../styled-components/pallette";
 
 export default function ButtonAcceptBase({
   text,
@@ -12,16 +11,16 @@ export default function ButtonAcceptBase({
   mw,
   mx,
   sx,
-  onClick // 🔥 IMPORTANTE
+  onClick
 }) {
   const texto = text ? text : "Aceptar";
 
   return (
     <Button
       variant="contained"
-      onClick={onClick} // 🔥 esto hace que funcione el botón
+      color="primary"
+      onClick={onClick}
       sx={{
-        backgroundColor: pallette.primary,
         width: {
           xs: "90%",   // móvil
           sm: "70%",   // tablet
@@ -38,11 +37,6 @@ export default function ButtonAcceptBase({
         marginX: mx,
         fontSize: { xs: "0.8rem", sm: "0.9rem", md: "1rem" },
         padding: { xs: "6px 12px", sm: "8px 16px", md: "10px 20px" },
-        borderRadius: "20px", // Redondeado
-        textTransform: "none",
-        "&:hover": {
-          backgroundColor: "#01783c",
-        },
         ...sx,
       }}
     >

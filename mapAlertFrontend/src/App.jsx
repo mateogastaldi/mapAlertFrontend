@@ -1,10 +1,9 @@
-import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Principal from './pages/all/Principal';
-import Register from './pages/all/Register';
-import Login from './pages/all/Login';
-import ProfileSettings from './pages/all/ProfileSettings';
-import AdminDashboard from './pages/all/AdminDashboard';
+import Principal from './pages/Principal';
+import Register from './pages/Register';
+import Login from './pages/Login';
+import ProfileSettings from './pages/ProfileSettings';
+import AdminDashboard from './pages/AdminDashboard';
 import { useAuth } from './hooks/useAuth';
 
 function ProtectedRoute({ children, adminOnly }) {

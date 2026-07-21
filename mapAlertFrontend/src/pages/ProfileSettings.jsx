@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Container, Box, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import Layout from "../../components/Layout";
-import TextInputBase from "../../components/TextInputBase";
-import PasswordInputBase from "../../components/PassworInputBase";
-import ButtonAcceptBase from "../../components/ButtonAcceptBase";
-import ButtonCancelBase from "../../components/ButtonCancelBase";
-import { useAuth } from "../../hooks/useAuth";
-import { updateProfile, deleteAccount } from "../../services/usuarioService";
-import pallette from "../../styled-components/pallette";
+import Layout from "../components/Layout";
+import TextInputBase from "../components/TextInputBase";
+import PasswordInputBase from "../components/PassworInputBase";
+import ButtonAcceptBase from "../components/ButtonAcceptBase";
+import ButtonCancelBase from "../components/ButtonCancelBase";
+import { useAuth } from "../hooks/useAuth";
+import { updateProfile, deleteAccount } from "../services/usuarioService";
+import { isValidPassword } from "../utilities/validators";
+import { getErrorMessage } from "../utilities/errorMessage";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -67,13 +68,9 @@ function ProfileSettings() {
         }
 
         // Validate password if modified
-        if (form.password !== "******") {
-            const hasUppercase = /[A-Z]/.test(form.password);
-            const isMinLength = form.password.length >= 8;
-            if (!isMinLength || !hasUppercase) {
-                showAlert("La contraseña debe tener mínimo 8 caracteres y una mayúscula");
-                return;
-            }
+        if (form.password !== "******" && !isValidPassword(form.password)) {
+            showAlert("La contraseña debe tener mínimo 8 caracteres y una mayúscula");
+            return;
         }
 
         try {
@@ -84,7 +81,7 @@ function ProfileSettings() {
             });
         } catch (err) {
             console.error(err);
-            showAlert(err.response?.data?.message || "El Usuario y/o Mail ya están registrados");
+            showAlert(getErrorMessage(err, "El Usuario y/o Mail ya están registrados"));
         }
     };
 
@@ -130,7 +127,7 @@ function ProfileSettings() {
                         p: 4,
                     }}
                 >
-                    <Typography variant="h5" sx={{ fontWeight: "bold", color: pallette.primary, mb: 3 }}>
+                    <Typography variant="h5" sx={{ fontWeight: "bold", color: "primary.main", mb: 3 }}>
                         Mi Perfil
                     </Typography>
 

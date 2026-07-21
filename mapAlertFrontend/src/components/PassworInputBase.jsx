@@ -2,12 +2,10 @@ import * as React from "react";
 import IconButton from "@mui/material/IconButton";
 import OutlinedInput from "@mui/material/OutlinedInput";
 import InputLabel from "@mui/material/InputLabel";
-import pallette from "../styled-components/pallette";
 import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-//import pallette from "../styled-components/pallette";
 
 export default function PasswordInputBase({
   nombre,
@@ -18,8 +16,8 @@ export default function PasswordInputBase({
   ml,
   required,
   mw,
-  onChange, // 🔥 ya lo tenés
-  value     // 🔥 ya lo tenés
+  onChange,
+  value
 }) {
   const [showPassword, setShowPassword] = React.useState(false);
 
@@ -50,14 +48,13 @@ export default function PasswordInputBase({
         marginBottom: mb,
         marginLeft: ml,
         marginRight: mr,
-        color: pallette.primary,
       }}
       variant="outlined"
       required={required}
     >
       <InputLabel
         htmlFor="outlined-adornment-password"
-        sx={{ color: pallette.primary, "&.Mui-focused": { color: pallette.primary } }}
+        sx={{ "&.Mui-focused": { color: "primary.main" } }}
       >
         {nombre}
       </InputLabel>
@@ -65,8 +62,8 @@ export default function PasswordInputBase({
       <OutlinedInput
         id="outlined-adornment-password"
         type={showPassword ? "text" : "password"}
-        onChange={onChange} // 🔥 CLAVE
-        value={value}       // 🔥 CLAVE
+        onChange={onChange}
+        value={value}
         endAdornment={
           <InputAdornment position="end">
             <IconButton
@@ -77,7 +74,7 @@ export default function PasswordInputBase({
               onMouseDown={handleMouseDownPassword}
               onMouseUp={handleMouseUpPassword}
               edge="end"
-              sx={{ color: pallette.primary }}
+              sx={{ color: "primary.main" }}
             >
               {showPassword ? <VisibilityOff /> : <Visibility />}
             </IconButton>
@@ -85,111 +82,19 @@ export default function PasswordInputBase({
         }
         label={nombre}
         sx={{
-          "& .MuiOutlinedInput-notchedOutline": { borderColor: pallette.primary },
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
           "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: pallette.primary,
+            borderColor: "text.secondary",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: pallette.primary,
+            borderColor: "primary.main",
+            borderWidth: "1.5px",
+          },
+          "&.Mui-focused": {
+            boxShadow: (theme) => `0 0 0 3px ${theme.palette.primary.main}26`,
           },
         }}
       />
     </FormControl>
   );
 }
-/*import * as React from "react";
-import IconButton from "@mui/material/IconButton";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-
-import FormControl from "@mui/material/FormControl";
-
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-
-export default function PasswordInputBase({
-  nombre,
-  mr,
-  mt,
-  mb,
-  m,
-  ml,
-  required,
-  mw,
-  onChange, // 🔥 AGREGAR
-  value 
-}) {
-  const [showPassword, setShowPassword] = React.useState(false);
-
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-
-  const handleMouseUpPassword = (event) => {
-    event.preventDefault();
-  };
-
-  return (
-    <FormControl
-      sx={{
-        display: "flex",
-        maxWidth: mw,
-        width: {
-          xs: "90%",
-          sm: "70%",
-          md: "50%",
-          lg: mw,
-          xl: mw,
-        },
-        margin: m,
-        marginTop: mt,
-        marginBottom: mb,
-        marginLeft: ml,
-        marginRight: mr,
-        color: "#01964bff",
-      }}
-      variant="outlined"
-      required={required}
-    >
-      <InputLabel
-        htmlFor="outlined-adornment-password"
-        sx={{ color: "#03723bff", "&.Mui-focused": { color: "#01964bff" } }}
-      >
-        {nombre}
-      </InputLabel>
-      <OutlinedInput
-        id="outlined-adornment-password"
-        type={showPassword ? "text" : "password"}
-        endAdornment={
-          <InputAdornment position="end">
-            <IconButton
-              aria-label={
-                showPassword ? "hide the password" : "display the password"
-              }
-              onClick={handleClickShowPassword}
-              onMouseDown={handleMouseDownPassword}
-              onMouseUp={handleMouseUpPassword}
-              edge="end"
-              sx={{ color: "#01964bff" }}
-            >
-              {showPassword ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </InputAdornment>
-        }
-        label="Password"
-        sx={{
-          "& .MuiOutlinedInput-notchedOutline": { borderColor: "#01964bff" },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#01964bff",
-          },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#01964bff",
-          },
-        }}
-      />
-    </FormControl>
-  );
-}*/

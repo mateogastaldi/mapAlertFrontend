@@ -1,13 +1,14 @@
 import { Container, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TextInputBase from "../../components/TextInputBase";
-import logo from "../../assets/logo png.png";
-import PasswordInputBase from "../../components/PassworInputBase";
-import ButtonAcceptBase from "../../components/ButtonAcceptBase";
-import ButtonCancelBase from "../../components/ButtonCancelBase";
-import { useAuth } from "../../hooks/useAuth";
-import pallette from "../../styled-components/pallette";
+import TextInputBase from "../components/TextInputBase";
+import logo from "../assets/logo.png";
+import PasswordInputBase from "../components/PassworInputBase";
+import ButtonAcceptBase from "../components/ButtonAcceptBase";
+import ButtonCancelBase from "../components/ButtonCancelBase";
+import { useAuth } from "../hooks/useAuth";
+import { isValidPassword } from "../utilities/validators";
+import { getErrorMessage } from "../utilities/errorMessage";
 
 const marginTop = "13px";
 const marginBottom = "13px";
@@ -49,10 +50,7 @@ function Register() {
             return;
         }
 
-        const hasUppercase = /[A-Z]/.test(form.password);
-        const isMinLength = form.password.length >= 8;
-
-        if (!isMinLength || !hasUppercase) {
+        if (!isValidPassword(form.password)) {
             showAlert("La contraseña debe tener al menos 8 caracteres y contener al menos una letra mayúscula.");
             return;
         }
@@ -68,8 +66,7 @@ function Register() {
             window.location.href = "/";
         } catch (err) {
             console.error(err);
-            const serverMsg = err.response?.data?.message || err.response?.data?.reason || (typeof err.response?.data === 'string' ? err.response.data : null);
-            showAlert(serverMsg || "El usuario y/o email ya se encuentran registrados");
+            showAlert(getErrorMessage(err, "El usuario y/o email ya se encuentran registrados"));
         }
     };
 
@@ -220,12 +217,12 @@ function Register() {
                         <ButtonCancelBase
                             text="No"
                             onClick={() => setOpenCancelDialog(false)}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                         <ButtonAcceptBase
                             text="Sí"
                             onClick={() => navigate('/')}
-                            sx={{ bgcolor: pallette.primary, "&:hover": { bgcolor: "#01783c" } }}
+                            sx={{ bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}
                         />
                     </DialogActions>
                 </Dialog>

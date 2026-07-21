@@ -1,24 +1,23 @@
-import React, { useState, useRef, useEffect } from "react";
-import Layout from "../../components/Layout";
+import React, { useState, useEffect } from "react";
+import Layout from "../components/Layout";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { useMapEvents } from "react-leaflet/hooks";
 import AddIcon from "@mui/icons-material/Add";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import "leaflet/dist/leaflet.css";
-import "./styles.css";
-import CustomizeMarker from "../../components/CustomizeMarker";
+import "./Principal.css";
+import CustomizeMarker from "../components/CustomizeMarker";
 import { Fab, useMediaQuery, useTheme, Paper, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@mui/material";
-import pallette from "../../styled-components/pallette.jsx";
-import ReportDialog from "../../components/ReportDialog.jsx";
-import { useNavigate } from "react-router-dom";
+import ReportDialog from "../components/ReportDialog.jsx";
 import {
   getReportsByBounds,
   reportRegister,
   getReportsByBoundsAndFilters,
-} from "../../services/reporteService.js";
-import { useAuth } from "../../hooks/useAuth.jsx";
-import FilterDialog from "../../components/FilterDialog.jsx";
-import ButtonAcceptBase from "../../components/ButtonAcceptBase";
+} from "../services/reporteService.js";
+import { useAuth } from "../hooks/useAuth.jsx";
+import FilterDialog from "../components/FilterDialog.jsx";
+import ChooseReportMethodDialog from "../components/ChooseReportMethodDialog.jsx";
+import ButtonAcceptBase from "../components/ButtonAcceptBase";
 
 const position = [-31.6353, -60.7031];
 
@@ -82,13 +81,13 @@ function InitialFetch({ setMarkers }) {
 }
 
 function Principal() {
-  const navigate = useNavigate();
-
   const [markers, setMarkers] = useState([]);
   const [openFilter, setOpenFilter] = useState(false);
   const [isMarking, setIsMarking] = useState(false);
   const [clickedLatLng, setClickedLatLng] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openMethodChooser, setOpenMethodChooser] = useState(false);
+  const [reportMode, setReportMode] = useState("map");
   const [filtros, setFiltros] = useState({
     soloMios: false,
     desdeFecha: null,
@@ -108,7 +107,20 @@ function Principal() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleOpenDialog = () => {
-    setIsMarking(true);
+    setOpenMethodChooser(true);
+  };
+
+  const handleChooseMethod = (method) => {
+    setOpenMethodChooser(false);
+    if (!method) return;
+
+    setReportMode(method);
+    if (method === "map") {
+      setIsMarking(true);
+    } else {
+      setClickedLatLng(null);
+      setOpenDialog(true);
+    }
   };
 
   const handleCloseDialog = async (reportData) => {
@@ -135,16 +147,16 @@ function Principal() {
 
   const fabStyle = {
     zIndex: 1000,
-    bgcolor: pallette.primary,
-    color: pallette.secondary,
-    borderColor: pallette.secondary,
+    bgcolor: "primary.main",
+    color: "primary.contrastText",
+    borderColor: "primary.contrastText",
     "&:hover": {
-      bgcolor: pallette.secondary,
-      color: pallette.primary,
+      bgcolor: "primary.contrastText",
+      color: "primary.main",
       boxShadow: "0 0 10px rgba(0,0,0,0.3)",
     },
     "&:active": {
-      bgcolor: pallette.secondary,
+      bgcolor: "primary.contrastText",
       transform: "scale(0.95)",
       transition: "transform 0.1s ease",
     },
@@ -154,20 +166,21 @@ function Principal() {
     <Layout>
       {isMarking && (
         <Paper
-          elevation={4}
+          elevation={0}
           sx={{
             position: "absolute",
-            top: "85px",
+            top: 80,
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 1000,
-            bgcolor: pallette.primary,
-            color: "white",
+            bgcolor: "rgba(1, 150, 75, 0.85)",
+            backdropFilter: "blur(12px)",
+            color: "primary.contrastText",
             px: 3,
             py: 1.5,
-            borderRadius: "20px",
+            borderRadius: "9999px",
             fontWeight: "bold",
-            boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+            boxShadow: "0 4px 15px rgba(1, 150, 75, 0.25)",
             pointerEvents: "none"
           }}
         >
@@ -227,10 +240,14 @@ function Principal() {
         )}
 
         <FilterDialog open={openFilter} onClose={handleCloseFilter} />
-        
+
+        <ChooseReportMethodDialog open={openMethodChooser} onClose={handleChooseMethod} />
+
         <ReportDialog
+          key={reportMode}
           open={openDialog}
           onClose={handleCloseDialog}
+          mode={reportMode}
           lat={clickedLatLng?.lat}
           lng={clickedLatLng?.lng}
         />
