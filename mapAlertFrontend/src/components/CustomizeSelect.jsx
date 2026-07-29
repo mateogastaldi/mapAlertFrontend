@@ -3,36 +3,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
-import bache from "../assets/bache.png";
-import sinLuz from "../assets/sin-luz.png";
-import sinElectricidad from "../assets/sin-cargos.png";
-import accidenteAutos from "../assets/accidente-de-auto.png";
 import Box from '@mui/material/Box';
 import { Typography } from '@mui/material';
-
-const incidentes = [
-    {
-        title:"Accidente de trafico",
-        img: accidenteAutos,
-        reportType: "ACCIDENTE" 
-    },
-    {
-        title:'Calle sin luz',
-        img: sinLuz,
-        reportType:"CALLE_SIN_LUZ"
-    },
-    {
-        title: 'Corte de electricidad',
-        img: sinElectricidad,
-        reportType:"CORTE_DE_LUZ"
-    },
-    {
-        title: 'Bache',
-        img: bache,
-        reportType:"BACHE"
-    }
-
-];
+import { INCIDENT_TYPES } from '../constants/incidentTypes';
 
 export default function CustomizeSelect({ value, label, onChange, sx}) {
 
@@ -53,25 +26,33 @@ export default function CustomizeSelect({ value, label, onChange, sx}) {
             borderRadius:'12px'
         }}
       >
-        {incidentes.map(incidente => (
-           <MenuItem value={incidente.reportType} sx={{
-            display:'flex',
-            flexDirection:'row',
-            justifyContent:'flex-start',
-            alignItems:'center',
-            
-           }}>
-                <Box component="img" src={incidente.img} sx={{height:{
-                    xl:'22px',
-                    lg:'22px',
-                    md:'20px',
-                    sm:'18px',
-                    xs:'18px',
-                },margin:0.5}}/>
+        {INCIDENT_TYPES.map(incidente => {
+          const Icon = incidente.icon;
+          return (
+            <MenuItem key={incidente.reportType} value={incidente.reportType} sx={{
+              display:'flex',
+              flexDirection:'row',
+              justifyContent:'flex-start',
+              alignItems:'center',
+            }}>
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 22,
+                    height: 22,
+                    borderRadius: '50%',
+                    bgcolor: incidente.color,
+                    margin: 0.5,
+                    flexShrink: 0,
+                }}>
+                    <Icon sx={{ fontSize: 14, color: '#fff' }} />
+                </Box>
                 <Typography sx={{m:0.5}}>{incidente.title}</Typography>
             </MenuItem>
-        ))}
-        
+          );
+        })}
+
       </Select>
     </FormControl>
   );

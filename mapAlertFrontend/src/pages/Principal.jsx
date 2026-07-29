@@ -61,6 +61,26 @@ function MapEventHandler({
   return null;
 }
 
+function LocateUser() {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+      },
+      (err) => {
+        console.error("No se pudo obtener la ubicación del dispositivo:", err);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [map]);
+
+  return null;
+}
+
 function InitialFetch({ setMarkers }) {
   const map = useMap();
 
@@ -121,6 +141,12 @@ function Principal() {
       setClickedLatLng(null);
       setOpenDialog(true);
     }
+  };
+
+  const handleRemark = () => {
+    setOpenDialog(false);
+    setClickedLatLng(null);
+    setIsMarking(true);
   };
 
   const handleCloseDialog = async (reportData) => {
@@ -194,6 +220,7 @@ function Principal() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <InitialFetch setMarkers={setMarkers} />
+        <LocateUser />
         {markers.map((marker, index) => (
           <CustomizeMarker key={marker.id ?? index} marker={marker} />
         ))}
@@ -247,6 +274,7 @@ function Principal() {
           key={reportMode}
           open={openDialog}
           onClose={handleCloseDialog}
+          onRemark={handleRemark}
           mode={reportMode}
           lat={clickedLatLng?.lat}
           lng={clickedLatLng?.lng}

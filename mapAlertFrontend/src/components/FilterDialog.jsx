@@ -15,13 +15,7 @@ import { useAuth } from "../hooks/useAuth";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-
-const categorias = [
-  { label: "Accidente de tráfico", value: "ACCIDENTE" },
-  { label: "Calle sin luz", value: "CALLE_SIN_LUZ" },
-  { label: "Corte de electricidad", value: "CORTE_DE_LUZ" },
-  { label: "Bache", value: "BACHE" },
-];
+import { INCIDENT_TYPES } from "../constants/incidentTypes";
 
 function FilterDialog({ open, onClose }) {
   const { isLoggedIn } = useAuth();
@@ -155,14 +149,14 @@ function FilterDialog({ open, onClose }) {
               Categoría
             </Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {categorias.map((cat) => {
-                const seleccionada = categoriasSeleccionadas.includes(cat.value);
+              {INCIDENT_TYPES.map((cat) => {
+                const seleccionada = categoriasSeleccionadas.includes(cat.reportType);
                 return (
                   <Button
-                    key={cat.value}
+                    key={cat.reportType}
                     variant="outlined"
                     size="small"
-                    onClick={() => handleToggleCategoria(cat.value)}
+                    onClick={() => handleToggleCategoria(cat.reportType)}
                     sx={{
                       borderRadius: "12px",
                       borderColor: seleccionada ? "primary.main" : "divider",
@@ -177,7 +171,7 @@ function FilterDialog({ open, onClose }) {
                       },
                     }}
                   >
-                    {cat.label}
+                    {cat.title}
                   </Button>
                 );
               })}

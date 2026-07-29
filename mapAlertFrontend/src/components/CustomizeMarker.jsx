@@ -7,26 +7,14 @@ import ThumbDownOutlinedIcon from "@mui/icons-material/ThumbDownOutlined";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import L from "leaflet";
+import "./CustomizeMarker.css";
 
-import pothole from "../assets/bache.png";
-import powerOutage from "../assets/sin-luz.png";
-import withOutElectricity from "../assets/sin-cargos.png";
-import defaultMarker from "../assets/marca-de-ubicacion.png";
-import accidenteDeTrafico from "../assets/accidente-de-auto.png";
-
+import { createIncidentMarkerIcon } from "../utils/mapMarkerIcon";
 import { useAuth } from "../hooks/useAuth";
 import { rateReport, verifyReport, dismissReport, editReport, deleteReport } from "../services/reporteService";
 import ButtonAcceptBase from "./ButtonAcceptBase";
 import ButtonCancelBase from "./ButtonCancelBase";
 import CustomizeSelect from "./CustomizeSelect";
-
-const ICON_MAP = {
-  CALLE_SIN_LUZ: powerOutage,
-  BACHE: pothole,
-  CORTE_DE_LUZ: withOutElectricity,
-  ACCIDENTE: accidenteDeTrafico,
-};
 
 const AUTH_HINT = "Iniciá sesión para interactuar con los reportes";
 
@@ -244,10 +232,7 @@ export default function CustomizeMarker({ marker }) {
     return null;
   }
 
-  const iconUrl = L.icon({
-    iconUrl: ICON_MAP[reportData.reportType] || defaultMarker,
-    iconSize: [40, 40],
-  });
+  const iconUrl = createIncidentMarkerIcon(reportData.reportType);
 
   const description = reportData.reportDescription ?? "";
   const streetName = reportData.street || "";

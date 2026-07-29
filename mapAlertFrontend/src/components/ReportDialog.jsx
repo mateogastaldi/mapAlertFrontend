@@ -4,7 +4,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
-import { Divider, Typography, Box, TextField } from "@mui/material";
+import { Divider, Typography, Box, TextField, Button } from "@mui/material";
 import CustomizeSelect from "./CustomizeSelect";
 import CloseIcon from "@mui/icons-material/Close";
 import ButtonAcceptBase from "./ButtonAcceptBase";
@@ -12,7 +12,7 @@ import ButtonCancelBase from "./ButtonCancelBase";
 import { reverseGeocode, loadGoogleMapsScript } from "../services/googleApi";
 import { adaptGoogleAddressComponents } from "../adapters/googleAddressAdapter";
 
-function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
+function ReportDialog({ open, onClose, lat, lng, mode = "map", onRemark }) {
   const [valueReport, setValueReport] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [street, setStreet] = React.useState("");
@@ -28,6 +28,11 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
   const handleClose = () => {
     setErrorText("");
     onClose(null);
+  };
+
+  const handleRemark = () => {
+    setErrorText("");
+    onRemark?.();
   };
 
   const handleAccept = () => {
@@ -197,6 +202,7 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
           label="Calle *"
           value={street}
           onChange={(e) => setStreet(e.target.value)}
+          disabled
           size="small"
           fullWidth
           InputProps={{ sx: { borderRadius: "12px" } }}
@@ -206,6 +212,7 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
           label="Altura (Nro)"
           value={streetNumber}
           onChange={(e) => setStreetNumber(e.target.value)}
+          disabled
           type="number"
           size="small"
           fullWidth
@@ -216,6 +223,7 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
           label="Ciudad *"
           value={city}
           onChange={(e) => setCity(e.target.value)}
+          disabled
           size="small"
           fullWidth
           InputProps={{ sx: { borderRadius: "12px" } }}
@@ -225,6 +233,7 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
           label="Provincia *"
           value={state}
           onChange={(e) => setState(e.target.value)}
+          disabled
           size="small"
           fullWidth
           InputProps={{ sx: { borderRadius: "12px" } }}
@@ -234,10 +243,22 @@ function ReportDialog({ open, onClose, lat, lng, mode = "map" }) {
           label="País *"
           value={country}
           onChange={(e) => setCountry(e.target.value)}
+          disabled
           size="small"
           fullWidth
           InputProps={{ sx: { borderRadius: "12px" } }}
         />
+
+        {mode === "map" && (
+          <Button
+            variant="outlined"
+            onClick={handleRemark}
+            fullWidth
+            sx={{ borderRadius: "12px", textTransform: "none" }}
+          >
+            Volver a marcar en el mapa
+          </Button>
+        )}
 
         <TextField
           label="Descripción"
